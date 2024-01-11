@@ -118,7 +118,7 @@ def Test(
 # ----------------------------------------------------------------------
 @app.command("UpdateVersion", no_args_is_help=False)
 def UpdateVersion(
-    auto_sem_ver_version: str=typer.Option("0.6.3", "--auto-sem-ver-version", help="Version of the autosemver image on dockerhub."),
+    auto_sem_ver_version: str=typer.Option("0.6.7", "--auto-sem-ver-version", help="Version of the autosemver image on dockerhub."),
     verbose: bool=typer.Option(False, "--verbose", help="Write verbose information to the terminal."),
     debug: bool=typer.Option(False, "--debug", help="Write debug information to the terminal."),
 ) -> None:
