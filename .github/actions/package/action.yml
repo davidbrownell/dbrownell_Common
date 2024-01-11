@@ -76,7 +76,7 @@ runs:
         path: dist/
 
     - name: Publish
-      if: ${{ github.ref == 'refs/heads/main' && github.workflow == 'on push' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       shell: ${{ inputs.shell_name }}
       run: |-
         ${{ inputs.source_command }} ${{ inputs.script_prefix }}Activate${{ inputs.script_extension }}

@@ -335,13 +335,6 @@ class StreamDecorator(TextWriter):
         else:
             self._col_offset = len(content[index:])
 
-        # BugBUg lines = content.split("\n")
-        # BugBUg
-        # BugBUg if len(lines) > 1:
-        # BugBUg     self._col_offset = 0
-        # BugBUg
-        # BugBUg self._col_offset += len(lines[-1])
-
         return len(content)
 
     # ----------------------------------------------------------------------
@@ -390,7 +383,7 @@ class StreamDecorator(TextWriter):
             return column, []
 
         if isinstance(self._streams[0], StreamDecorator):
-            column, prefixes = self._streams[0]._GetLinePrefixInfo(column, include_self=True)
+            column, prefixes = self._streams[0]._GetLinePrefixInfo(column, include_self=True)  # pylint: disable=protected-access
         else:
             prefixes = []
 
