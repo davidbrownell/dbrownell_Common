@@ -28,8 +28,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  standard:
+  Validate:
     strategy:
+      fail-fast: false
+
       matrix:
         os:
           - macos-latest
@@ -37,13 +39,13 @@ jobs:
           - windows-latest
 
         python_version:
-          - 3.12
-          - 3.11
-          - 3.10
-          - 3.9
-          - 3.8
+          - "3.12"
+          - "3.11"
+          - "3.10"
+          # - "3.9"  # Not supported
+          # - "3.8"  # Not supported
 
-    name: "Standard (py${{ matrix.python_version }})"
+    name: "Validate (${{ matrix.os }}; py${{ matrix.python_version }})"
     runs-on: ${{ matrix.os }}
 
     env:
@@ -63,12 +65,12 @@ jobs:
 
       - name: Initialize
         id: Initialize
-        uses: davidbrownell/PythonBootstrapper/actions/initialize@main
+        uses: davidbrownell/PythonBootstrapper/.github/actions/initialize@main
         with:
           operating_system: ${{ matrix.os }}
 
-      - name: Standard
-        uses: ./.github/actions/standard
+      - name: Validate
+        uses: ./.github/actions/validate
         with:
           operating_system: ${{ matrix.os }}
           python_version: ${{ matrix.python_version }}
@@ -77,3 +79,52 @@ jobs:
           shell_name: ${{ steps.initialize.outputs.shell_name }}
           source_command: ${{ steps.initialize.outputs.source_command }}
           sudo_command: ${{ steps.initialize.outputs.sudo_command }}
+
+  Package:
+    needs: Validate
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os:
+          - ubuntu-latest
+
+        python_version:
+          - "3.10"
+
+    name: "Package (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+
+    env:
+      COLUMNS: "200"
+      SIMULATE_TERMINAL_CAPABILITIES_SUPPORTS_COLORS: "1"
+      PYTHONIOENCODING: "UTF-8"
+
+    steps:
+      # Ensure that windows machines support long paths
+      - name: git Long File Path Support on Windows
+        if: ${{ startsWith(matrix.os, 'windows') }}
+        run: |-
+          git config --system core.longpaths true
+
+      - name: "Checkout Source"
+        uses: actions/checkout@v4
+
+      - name: Initialize
+        id: Initialize
+        uses: davidbrownell/PythonBootstrapper/.github/actions/initialize@main
+        with:
+          operating_system: ubuntu-latest
+
+      - name: Package
+        uses: ./.github/actions/package
+        with:
+          operating_system: ${{ matrix.os }}
+          python_version: ${{ matrix.python_version }}
+          script_prefix: ${{ steps.initialize.outputs.script_prefix }}
+          script_extension: ${{ steps.initialize.outputs.script_extension }}
+          shell_name: ${{ steps.initialize.outputs.shell_name }}
+          source_command: ${{ steps.initialize.outputs.source_command }}
+          sudo_command: ${{ steps.initialize.outputs.sudo_command }}
+          pypi_token: ${{ secrets.PYPI_TOKEN }}

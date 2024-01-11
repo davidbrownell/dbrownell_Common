@@ -1,0 +1,12 @@
+Activate.cmd
+Activate.sh
+Deactivate.cmd
+Deactivate.sh
+
+**/__pycache__/**
+**/Generated/**
+**/.coverage
+**/.vscode
+
+dist/**
+src/dbrownell_Common.egg-info/**
