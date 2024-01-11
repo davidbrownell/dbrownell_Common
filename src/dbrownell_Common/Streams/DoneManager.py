@@ -65,8 +65,8 @@ try:
     if "typer" in sys.modules:
         typer = sys.modules["typer"]
 
-        _original_exception_hook = typer.main._original_except_hook
-        typer.main._original_except_hook = _ExceptionHook
+        _original_exception_hook = typer.main._original_except_hook     # pylint: disable=protected-access
+        typer.main._original_except_hook = _ExceptionHook               # pylint: disable=protected-access
     else:
         _original_exception_hook = sys.excepthook
         sys.excepthook = _ExceptionHook
@@ -195,8 +195,8 @@ class Args(object):
     # |  Public Data
     # |
     # ----------------------------------------------------------------------
-    heading_param: InitVar[Optional[str]]
-    heading: Optional[str]                              = field(init=False)
+    heading_param: InitVar[str]
+    heading: str                                        = field(init=False)
 
     done_suffix_or_suffixes: InitVar[None | Callable[[], Optional[str]] | list[Callable[[], Optional[str]]]]    = None
     done_suffixes: list[Callable[[], Optional[str]]]    = field(init=False)
@@ -270,7 +270,7 @@ class DoneManager(object):
     _stream: StreamDecorator
 
     flags: Flags                            = field(kw_only=True)
-    heading: Optional[str]                  = field(kw_only=True)
+    heading: str                            = field(kw_only=True)
     preserve_status: bool                   = field(kw_only=True)
 
     num_cols: int                           = field(kw_only=True)
