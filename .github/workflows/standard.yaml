@@ -28,6 +28,10 @@ on:
   workflow_dispatch:
 
 jobs:
+  action_contexts:
+    name: "Display GitHub Action Contexts"
+    uses: davidbrownell/PythonBootstrapper/.github/workflows/callable_action_contexts.yaml@main
+
   Validate:
     strategy:
       fail-fast: false
