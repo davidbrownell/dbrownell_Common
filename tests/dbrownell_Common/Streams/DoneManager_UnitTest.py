@@ -834,7 +834,7 @@ class TestWriteStatus(object):
 
         assert stream.content == [
             "Testing...", None, "\n",
-            "  ", "\r  This is...cated.", "\n",
+            "  ", "\r  This ...uncated.", "\n",
             "  ", "\x1b[1A\r", "  ", "\x1b[1B", "\r", "DONE! (0, <Scrubbed Time>)\n",
         ]
 

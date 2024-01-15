@@ -39,7 +39,7 @@ class Capabilities(object):
     # |  Public Types
     # |
     # ----------------------------------------------------------------------
-    DEFAULT_COLUMNS: int                                = 200
+    DEFAULT_COLUMNS: int                                = 180
 
     SIMULATE_TERMINAL_COLUMNS_ENV_VAR: str              = "COLUMNS"
     SIMULATE_TERMINAL_INTERACTIVE_ENV_VAR: str          = "SIMULATE_TERMINAL_CAPABILITIES_IS_INTERACTIVE"
@@ -270,6 +270,38 @@ class Capabilities(object):
             is_interactive=is_interactive if is_interactive is not None else self.is_interactive,
             supports_colors=supports_colors if supports_colors is not None else self.supports_colors,
         )
+
+    # ----------------------------------------------------------------------
+    try:
+        from rich.console import Console
+
+        def CreateRichConsole(
+            self,
+            file: Optional[TextWriterT]=None,
+            *,
+            width: Optional[int]=None,
+        ) -> Console:
+            """Creates a `rich` `Console` instance."""
+
+            args = self._GetRichConsoleArgs()
+
+            # Width needs to be set separately
+            width_arg = width if width is not None else args.pop("width", None)
+
+            args["file"] = file
+
+            from rich.console import Console, ConsoleDimensions
+
+            result = Console(**args)
+
+            if width_arg is not None:
+                result.size = ConsoleDimensions(width_arg, result.height)
+
+            return result
+
+    except ImportError:
+        # This means that rich wasn't found, which is OK
+        pass
 
     # ----------------------------------------------------------------------
     # |

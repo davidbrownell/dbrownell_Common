@@ -52,6 +52,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "inflect == 4.*",
     "rich == 13.*",
 ]
 

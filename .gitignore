@@ -6,6 +6,7 @@ Deactivate.sh
 **/__pycache__/**
 **/Generated/**
 **/.coverage
+**/lcov.info
 **/.vscode
 
 dist/**
