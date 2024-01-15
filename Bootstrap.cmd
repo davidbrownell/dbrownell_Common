@@ -11,9 +11,45 @@
 @REM |
 @REM |      --python-version <version>      Specify the python version to install; the default python version is installed if not specified.
 @REM |
+@REM |      --bootstrap-branch <branch>     Specify the branch of the PythonBootstrapper repository to use when downloading BootstrapImpl; "main" is used if not specified.
+@REM |
 @REM ----------------------------------------------------------------------
 @setlocal EnableDelayedExpansion
 @pushd %~dp0
+
+@REM ----------------------------------------------------------------------
+@REM |
+@REM |  Parse and Process Arguments
+@REM |
+@REM ----------------------------------------------------------------------
+@set _BOOTSTRAP_BRANCH=main
+@set _COMMAND_LINE_ARGS=
+
+:ParseArgs
+@if '%1' EQU '' @goto :ParseArgs_End
+
+@set ARG=%1
+@set ARG=%ARG:"=%
+
+@if "%ARG%" NEQ "--bootstrap-branch" @goto :ParseArgs_BootstrapBranchEnd
+
+@REM Extract the bootstrap branch
+@shift /1
+
+@set ARG=%1
+@set ARG=%ARG:"=%
+
+@set _BOOTSTRAP_BRANCH=%ARG%
+@goto :ParseArgs_Next
+
+:ParseArgs_BootstrapBranchEnd
+@set _COMMAND_LINE_ARGS=%_COMMAND_LINE_ARGS% %1
+
+:ParseArgs_Next
+@shift /1
+@goto :ParseArgs
+
+:ParseArgs_End
 
 @REM ----------------------------------------------------------------------
 @REM |
@@ -22,13 +58,15 @@
 @REM ----------------------------------------------------------------------
 @echo Downloading Bootstrap code...
 
+@set _BOOTSTRAPIMPL_URL=https://raw.githubusercontent.com/davidbrownell/PythonBootstrapper/%_BOOTSTRAP_BRANCH%/src/BootstrapImpl.cmd
+
 @call :_CreateTempFileName
 
-@curl --header "Cache-Control: no-cache, no-store" --header "Pragma: no-cache" --location https://raw.githubusercontent.com/davidbrownell/PythonBootstrapper/main/src/BootstrapImpl.cmd --output BootstrapImpl.cmd --no-progress-meter --fail-with-body > "%_BOOTSTRAP_TEMP_FILENAME%" 2>&1
+@curl --header "Cache-Control: no-cache, no-store" --header "Pragma: no-cache" --location %_BOOTSTRAPIMPL_URL% --output BootstrapImpl.cmd --no-progress-meter --fail-with-body > "%_BOOTSTRAP_TEMP_FILENAME%" 2>&1
 @set _ERRORLEVEL=%ERRORLEVEL%
 
 @if %_ERRORLEVEL% NEQ 0 (
-    @echo [1ADownloading Bootstrap code...[31m[1mFAILED[0m.
+    @echo [1ADownloading Bootstrap code...[31m[1mFAILED[0m ^(%_BOOTSTRAPIMPL_URL%^).
     @echo.
 
     @type "%_BOOTSTRAP_TEMP_FILENAME%"
@@ -43,7 +81,7 @@
 @REM |  Invoke BootstrapImpl.cmd
 @REM |
 @REM ----------------------------------------------------------------------
-@call BootstrapImpl.cmd %*
+@call BootstrapImpl.cmd %_COMMAND_LINE_ARGS%
 @set _ERRORLEVEL=%ERRORLEVEL%
 
 @REM ----------------------------------------------------------------------
