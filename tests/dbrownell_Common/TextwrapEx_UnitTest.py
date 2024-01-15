@@ -203,3 +203,28 @@ class TestIndent(object):
             "***",
             skip_first_line=True,
         ) == "Line1\n\n***Line3\n"
+
+
+# ----------------------------------------------------------------------
+def test_BoundedLJust():
+    assert [
+        BoundedLJust("test", 10),
+        BoundedLJust("0123456789A", 10),
+        BoundedLJust("0123456789AB", 10),
+        BoundedLJust("0123456789A", 9),
+        BoundedLJust("0123456789AB", 9),
+        BoundedLJust("0123456789ABCDEFGHIJK", 13),
+        BoundedLJust("0123456789ABCDEFGHIJKL", 13),
+    ] == [
+        "test      ",
+        "012...789A",
+        "012...89AB",
+        "012...89A",
+        "012...9AB",
+        "01234...GHIJK",
+        "01234...HIJKL",
+    ]
+
+# ----------------------------------------------------------------------
+def test_CreateAnsiHyperlink():
+    assert CreateAnsiHyperLink("https://test.com", "Test Link") == "\x1b]8;;https://test.com\x1b\\Test Link\x1b]8;;\x1b\\"

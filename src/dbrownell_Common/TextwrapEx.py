@@ -15,6 +15,7 @@
 # ----------------------------------------------------------------------
 """Enhancements for the textwrap library."""
 
+import math
 import textwrap
 
 from typing import Callable, Optional
@@ -239,6 +240,44 @@ def Indent(
         indentation,
         lambda content: not content.isspace() and should_indent(content),
     )
+
+
+# ----------------------------------------------------------------------
+def BoundedLJust(
+    value: str,
+    length: int,
+) -> str:
+    """\
+    Returns a string that is length chars long. Content will be left-justified or
+    trimmed (with an ellipsis) if necessary.
+    """
+
+    len_value = len(value)
+
+    if len_value < length:
+        value = value.ljust(length)
+    elif len_value > length:
+        chars_to_trim = (len_value - length + 3) / 2
+        midpoint = math.floor(len_value / 2)
+
+        # Ensure a consistent ellipsis placement
+        if not length & 1 and not len_value & 1:
+            midpoint -= 1
+
+        value = "{}...{}".format(
+            value[:(midpoint - math.floor(chars_to_trim))],
+            value[(midpoint + math.ceil(chars_to_trim)):],
+        )
+
+    return value
+
+
+# ----------------------------------------------------------------------
+def CreateAnsiHyperLink(
+    url: str,
+    value: str,
+) -> str:
+    return "\033]8;;{}\033\\{}\033]8;;\033\\".format(url, value)
 
 
 # ----------------------------------------------------------------------

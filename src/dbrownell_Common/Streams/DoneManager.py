@@ -948,15 +948,9 @@ class DoneManager(object):
 
             for line in content_lines:
                 line = "{}{}".format(self._status_line_prefix, line)
+                line = TextwrapEx.BoundedLJust(line, self._num_status_cols)
 
-                # Trim if necessary
-                overflow_chars = len(line) - self._num_status_cols
-                if overflow_chars > 0:
-                    remove_index = len(line) // 2 - overflow_chars // 2
-
-                    line = "{}...{}".format(line[:remove_index], line[remove_index + overflow_chars + 3:])
-
-                lines.append("\r{}\n".format(line.ljust(self._num_status_cols)))
+                lines.append("\r{}\n".format(line))
 
             if len(self._prev_status_content) > len(lines):
                 blank_lines += ["\r{}\n".format("".ljust(self._num_status_cols)), ] * (len(self._prev_status_content) - len(lines))
