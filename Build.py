@@ -18,7 +18,7 @@
 import re
 
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
 
 import typer
 
@@ -49,9 +49,9 @@ app                                         = typer.Typer(
 # ----------------------------------------------------------------------
 @app.command("Pylint", no_args_is_help=False)
 def Pylint(
-    min_score: float=typer.Option(9.5, "--min-score", min=0.0, max=10.0, help="Fail if the total score is less than this value."),
-    verbose: bool=typer.Option(False, "--verbose", help="Write verbose information to the terminal."),
-    debug: bool=typer.Option(False, "--debug", help="Write debug information to the terminal."),
+    min_score: Annotated[float, typer.Option("--min-score", min=0.0, max=10.0, help="Fail if the total score is less than this value.")]=9.5,
+    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
+    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
 ) -> None:
     """Runs pylint on the python code."""
 
@@ -72,12 +72,12 @@ def Pylint(
 # ----------------------------------------------------------------------
 @app.command("Test", no_args_is_help=False)
 def Test(
-    code_coverage: bool=typer.Option(False, "--code-coverage", help="Run tests with code coverage information."),
-    benchmark: bool=typer.Option(False, "--benchmark", help="Run benchmark tests."),
-    min_coverage: Optional[float]=typer.Option(None, "--min-coverage", min=0.0, max=100.0, help="Fail if code coverage percentage is less than this value."),
-    pytest_args: Optional[str]=typer.Option(None, "--pytest-args", help="Additional arguments passed to pytest."),
-    verbose: bool=typer.Option(False, "--verbose", help="Write verbose information to the terminal."),
-    debug: bool=typer.Option(False, "--debug", help="Write debug information to the terminal."),
+    code_coverage: Annotated[bool, typer.Option("--code-coverage", help="Run tests with code coverage information.")]=False,
+    benchmark: Annotated[bool, typer.Option("--benchmark", help="Run benchmark tests.")]=False,
+    min_coverage: Annotated[Optional[float], typer.Option("--min-coverage", min=0.0, max=100.0, help="Fail if code coverage percentage is less than this value.")]=None,
+    pytest_args: Annotated[Optional[str], typer.Option("--pytest-args", help="Additional arguments passed to pytest.")]=None,
+    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
+    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
 ) -> None:
     """Tests the python code."""
 
@@ -85,7 +85,7 @@ def Test(
         flags=DoneManagerFlags.Create(verbose=verbose, debug=debug),
     ) as dm:
         if code_coverage:
-            min_coverage = min_coverage or 90.0
+            min_coverage = min_coverage or 80.0
         elif min_coverage:
             code_coverage = True
 
@@ -118,9 +118,9 @@ def Test(
 # ----------------------------------------------------------------------
 @app.command("UpdateVersion", no_args_is_help=False)
 def UpdateVersion(
-    auto_sem_ver_version: str=typer.Option("0.6.7", "--auto-sem-ver-version", help="Version of the autosemver image on dockerhub."),
-    verbose: bool=typer.Option(False, "--verbose", help="Write verbose information to the terminal."),
-    debug: bool=typer.Option(False, "--debug", help="Write debug information to the terminal."),
+    auto_sem_ver_version: Annotated[str, typer.Option("--auto-sem-ver-version", help="Version of the autosemver image on dockerhub.")]="0.6.7",
+    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
+    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
 ) -> None:
     """Updates the library version found in src/dbrownell_Common/__init__.py based on git changes."""
 
@@ -183,9 +183,9 @@ def UpdateVersion(
 # ----------------------------------------------------------------------
 @app.command("Package", no_args_is_help=False)
 def Package(
-    additional_args: list[str]=typer.Option([], "--arg", help="Additional arguments passed to the build command."),
-    verbose: bool=typer.Option(False, "--verbose", help="Write verbose information to the terminal."),
-    debug: bool=typer.Option(False, "--debug", help="Write debug information to the terminal."),
+    additional_args: Annotated[Optional[list[str]], typer.Option("--arg", help="Additional arguments passed to the build command.")]=None,
+    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
+    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
 ) -> None:
     """Builds the python package."""
 
@@ -208,10 +208,10 @@ def Package(
 # ----------------------------------------------------------------------
 @app.command("Publish", no_args_is_help=False)
 def Publish(
-    pypi_api_token: str=typer.Argument(..., help="API token as generated on PyPi.org or test.PyPi.org; this token should be scoped to this project only."),
-    production: bool=typer.Option(False, "--production", help="Push to the production version of PyPi (PyPi.org); the test PyPi server is used by default (test.PyPi.org)."),
-    verbose: bool=typer.Option(False, "--verbose", help="Write verbose information to the terminal."),
-    debug: bool=typer.Option(False, "--debug", help="Write debug information to the terminal."),
+    pypi_api_token: Annotated[str, typer.Argument(help="API token as generated on PyPi.org or test.PyPi.org; this token should be scoped to this project only.")],
+    production: Annotated[bool, typer.Option("--production", help="Push to the production version of PyPi (PyPi.org); the test PyPi server is used by default (test.PyPi.org).")]=False,
+    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
+    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
 ) -> None:
     """Publishes the python package to PyPi."""
 

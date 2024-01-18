@@ -54,6 +54,8 @@ classifiers = [
 dependencies = [
     "inflect == 4.*",
     "rich == 13.*",
+    "typer ~= 0.9",
+    "typer-config == 1.*",
 ]
 
 dynamic = [
@@ -70,13 +72,11 @@ dev = [
     "pytest == 7.*",
     "pytest-benchmark == 4.*",
     "pytest-cov == 4.*",
-    "typer ~= 0.9",
 ]
 
 package = [
     "build == 1.*",
     "twine == 4.*",
-    "typer ~= 0.9",
 ]
 
 [project.urls]
