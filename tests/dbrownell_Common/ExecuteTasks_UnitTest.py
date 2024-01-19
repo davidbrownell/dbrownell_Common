@@ -109,8 +109,14 @@ def test_ExecuteTasksStream():
     stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
     assert stream.content == [
-        "Executing tasks...", None, "\n",
-        "  ", "Tasks (5 items)...", None, "DONE! (0, <Scrubbed Time>, 5 items succeeded, no items with errors, no items with warnings)", "\n",
+        "Executing tasks...",
+        None,
+        "\n",
+        "  ",
+        "Tasks (5 items)...",
+        None,
+        "DONE! (0, <Scrubbed Time>, 5 items succeeded, no items with errors, no items with warnings)",
+        "\n",
         None,
         "DONE! (0, <Scrubbed Time>)\n",
     ]
@@ -134,14 +140,17 @@ def test_TransformTasks(no_compress_tasks):
     for index, result in enumerate(results):
         assert result == index * 2
 
-    assert _Scrub(sink.getvalue()) == textwrap.dedent(
-        """\
+    assert (
+        _Scrub(sink.getvalue())
+        == textwrap.dedent(
+            """\
         Transforming tasks...
           Tasks ({num_tasks} items)...DONE! (0, <Scrubbed Time>, {num_tasks} items succeeded, no items with errors, no items with warnings)
         DONE! (0, <Scrubbed Time>)
         """,
-    ).format(
-        num_tasks=num_tasks,
+        ).format(
+            num_tasks=num_tasks,
+        )
     )
 
 
@@ -149,7 +158,9 @@ def test_TransformTasks(no_compress_tasks):
 def test_YieldQueueExecutor():
     sink = _CreateSink()
 
-    results = [None, ] * 10
+    results = [
+        None,
+    ] * 10
 
     with DoneManager.Create(sink, "Queue Executor") as dm:
         with YieldQueueExecutor(dm, "Queue") as executor:
@@ -186,15 +197,15 @@ class _FakeStream(TextWriter):
     def __init__(
         self,
         *,
-        fileno: int=123,
-        isatty: bool=False,
-        is_headless: bool=True,
-        is_interactive: bool=False,
-        supports_colors: bool=False,
+        fileno: int = 123,
+        isatty: bool = False,
+        is_headless: bool = True,
+        is_interactive: bool = False,
+        supports_colors: bool = False,
     ):
-        self.content: list[Optional[str]]   = []
-        self._fileno                        = fileno
-        self._isatty                        = isatty
+        self.content: list[Optional[str]] = []
+        self._fileno = fileno
+        self._isatty = isatty
 
         Capabilities(
             stream=self,
@@ -236,8 +247,8 @@ class _FakeStream(TextWriter):
 def _ExecuteTasks(
     dm: DoneManager,
     execute_func: Callable[
-        [int],                              # context
-        tuple[int, int],                    # updated context, return code
+        [int],  # context
+        tuple[int, int],  # updated context, return code
     ],
     **execute_tasks_kwargs: Any,
 ) -> list[int]:
@@ -250,12 +261,16 @@ def _ExecuteTasks(
         for value in range(5)
     ]
 
-    results = [None, ] * len(task_data)
+    results = [
+        None,
+    ] * len(task_data)
 
     # ----------------------------------------------------------------------
     def Init(context: Any) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
         # ----------------------------------------------------------------------
-        def Prepare(on_simple_status_func: Callable[[str], None]) -> ExecuteTasksTypes.ExecuteFuncType:
+        def Prepare(
+            on_simple_status_func: Callable[[str], None]
+        ) -> ExecuteTasksTypes.ExecuteFuncType:
             # ----------------------------------------------------------------------
             def Execute(status: Status) -> int:
                 result, return_code = execute_func(context)
@@ -283,7 +298,7 @@ def _TransformTasks(
     dm: DoneManager,
     transform_func: Callable[[int, Status], int],
     *,
-    num_tasks: int=5,
+    num_tasks: int = 5,
     **transform_tasks_kwargs: Any,
 ) -> list[int]:
     results = TransformTasks(
@@ -299,7 +314,7 @@ def _TransformTasks(
 
 # ----------------------------------------------------------------------
 def _CreateSink(
-    supports_colors: bool=False,
+    supports_colors: bool = False,
 ) -> StringIO:
     sink = StringIO()
 

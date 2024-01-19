@@ -416,27 +416,35 @@ def test_SuppressExceptionsNoDisplayExceptions():
         Exception,
         match=re.escape("Exceptions should not be suppressed when they are not displayed."),
     ):
-        with DoneManager.Create(StringIO(), "Testing", display_exceptions=False, suppress_exceptions=True):
+        with DoneManager.Create(
+            StringIO(), "Testing", display_exceptions=False, suppress_exceptions=True
+        ):
             pass
 
 
 # ----------------------------------------------------------------------
 def test_StandardFlags():
-    with DoneManager.Create(_CreateSink(), "Testing", flags=Flags.Create(verbose=False, debug=False)) as dm:
+    with DoneManager.Create(
+        _CreateSink(), "Testing", flags=Flags.Create(verbose=False, debug=False)
+    ) as dm:
         assert dm.is_verbose is False
         assert dm.is_debug is False
 
 
 # ----------------------------------------------------------------------
 def test_VerboseFlags():
-    with DoneManager.Create(_CreateSink(), "Testing", flags=Flags.Create(verbose=True, debug=False)) as dm:
+    with DoneManager.Create(
+        _CreateSink(), "Testing", flags=Flags.Create(verbose=True, debug=False)
+    ) as dm:
         assert dm.is_verbose is True
         assert dm.is_debug is False
 
 
 # ----------------------------------------------------------------------
 def test_DebugFlags():
-    with DoneManager.Create(_CreateSink(), "Testing", flags=Flags.Create(verbose=False, debug=True)) as dm:
+    with DoneManager.Create(
+        _CreateSink(), "Testing", flags=Flags.Create(verbose=False, debug=True)
+    ) as dm:
         assert dm.is_verbose is True
         assert dm.is_debug is True
 
@@ -500,15 +508,18 @@ def test_WriteSuccessWithColor():
     with DoneManager.Create(sink, "Testing") as dm:
         dm.WriteSuccess("Line 1")
 
-    assert _Scrub(sink.getvalue()) == textwrap.dedent(
-        """\
+    assert (
+        _Scrub(sink.getvalue())
+        == textwrap.dedent(
+            """\
         Testing...
           {color_on}SUCCESS:{color_off} Line 1
         DONE! ({color_on}0{color_off}, <Scrubbed Time>)
         """,
-    ).format(
-        color_on=TextwrapEx.SUCCESS_COLOR_ON,
-        color_off=TextwrapEx.COLOR_OFF,
+        ).format(
+            color_on=TextwrapEx.SUCCESS_COLOR_ON,
+            color_off=TextwrapEx.COLOR_OFF,
+        )
     )
 
 
@@ -535,15 +546,18 @@ def test_WriteErrorWithColor():
     with DoneManager.Create(sink, "Testing") as dm:
         dm.WriteError("Line 1")
 
-    assert _Scrub(sink.getvalue()) == textwrap.dedent(
-        """\
+    assert (
+        _Scrub(sink.getvalue())
+        == textwrap.dedent(
+            """\
         Testing...
           {color_on}ERROR:{color_off} Line 1
         DONE! ({color_on}-1{color_off}, <Scrubbed Time>)
         """,
-    ).format(
-        color_on=TextwrapEx.ERROR_COLOR_ON,
-        color_off=TextwrapEx.COLOR_OFF,
+        ).format(
+            color_on=TextwrapEx.ERROR_COLOR_ON,
+            color_off=TextwrapEx.COLOR_OFF,
+        )
     )
 
 
@@ -570,15 +584,18 @@ def test_WriteWarningWithColor():
     with DoneManager.Create(sink, "Testing") as dm:
         dm.WriteWarning("Line 1")
 
-    assert _Scrub(sink.getvalue()) == textwrap.dedent(
-        """\
+    assert (
+        _Scrub(sink.getvalue())
+        == textwrap.dedent(
+            """\
         Testing...
           {color_on}WARNING:{color_off} Line 1
         DONE! ({color_on}1{color_off}, <Scrubbed Time>)
         """,
-    ).format(
-        color_on=TextwrapEx.WARNING_COLOR_ON,
-        color_off=TextwrapEx.COLOR_OFF,
+        ).format(
+            color_on=TextwrapEx.WARNING_COLOR_ON,
+            color_off=TextwrapEx.COLOR_OFF,
+        )
     )
 
 
@@ -605,16 +622,19 @@ def test_WriteInfoWithColor():
     with DoneManager.Create(sink, "Testing") as dm:
         dm.WriteInfo("Line 1")
 
-    assert _Scrub(sink.getvalue()) == textwrap.dedent(
-        """\
+    assert (
+        _Scrub(sink.getvalue())
+        == textwrap.dedent(
+            """\
         Testing...
           {info_color_on}INFO:{color_off} Line 1
         DONE! ({success_color_on}0{color_off}, <Scrubbed Time>)
         """,
-    ).format(
-        info_color_on=TextwrapEx.INFO_COLOR_ON,
-        success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
-        color_off=TextwrapEx.COLOR_OFF,
+        ).format(
+            info_color_on=TextwrapEx.INFO_COLOR_ON,
+            success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
+            color_off=TextwrapEx.COLOR_OFF,
+        )
     )
 
 
@@ -648,16 +668,19 @@ def WriteVerbose():
     with DoneManager.Create(sink, "Testing", flags=Flags.Create(verbose=True)) as dm:
         dm.WriteVerbose("Line 1")
 
-    assert _Scrub(sink.getvalue()) == textwrap.dedent(
-        """\
+    assert (
+        _Scrub(sink.getvalue())
+        == textwrap.dedent(
+            """\
         Testing...
           {verbose_color_on}VERBOSE:{color_off} Line 1
         DONE! ({success_color_on}0{color_off}, <Scrubbed Time>)
         """,
-    ).format(
-        verbose_color_on=TextwrapEx.VERBOSE_COLOR_ON,
-        success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
-        color_off=TextwrapEx.COLOR_OFF,
+        ).format(
+            verbose_color_on=TextwrapEx.VERBOSE_COLOR_ON,
+            success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
+            color_off=TextwrapEx.COLOR_OFF,
+        )
     )
 
 
@@ -691,16 +714,19 @@ def test_WriteDebug():
     with DoneManager.Create(sink, "Testing", flags=Flags.Create(debug=True)) as dm:
         dm.WriteDebug("Line 1")
 
-    assert _Scrub(sink.getvalue()) == textwrap.dedent(
-        """\
+    assert (
+        _Scrub(sink.getvalue())
+        == textwrap.dedent(
+            """\
         Testing...
           {debug_color_on}DEBUG:{color_off} Line 1
         DONE! ({success_color_on}0{color_off}, <Scrubbed Time>)
         """,
-    ).format(
-        debug_color_on=TextwrapEx.DEBUG_COLOR_ON,
-        success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
-        color_off=TextwrapEx.COLOR_OFF,
+        ).format(
+            debug_color_on=TextwrapEx.DEBUG_COLOR_ON,
+            success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
+            color_off=TextwrapEx.COLOR_OFF,
+        )
     )
 
 
@@ -795,9 +821,17 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n",
-            "  ", "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[1A\r", "  ", "\x1b[1B", "\r",
+            "Testing...",
+            None,
+            "\n",
+            "  ",
+            "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[1A\r",
+            "  ",
+            "\x1b[1B",
+            "\r",
             "DONE! (0, <Scrubbed Time>)\n",
         ]
 
@@ -813,10 +847,23 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n", # 0 - 2
-            "  ", "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n", # 3 - 5
-            "  ", "\x1b[1A\r", "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n", # 7 - 9
-            "  ", "\x1b[1A\r", "  ", "\x1b[1A\rTesting...", None, "DONE! (0, <Scrubbed Time>)\n", # 10 - 14
+            "Testing...",
+            None,
+            "\n",  # 0 - 2
+            "  ",
+            "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",  # 3 - 5
+            "  ",
+            "\x1b[1A\r",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",  # 7 - 9
+            "  ",
+            "\x1b[1A\r",
+            "  ",
+            "\x1b[1A\rTesting...",
+            None,
+            "DONE! (0, <Scrubbed Time>)\n",  # 10 - 14
         ]
 
     # ----------------------------------------------------------------------
@@ -833,9 +880,18 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n",
-            "  ", "\r  This ...uncated.", "\n",
-            "  ", "\x1b[1A\r", "  ", "\x1b[1B", "\r", "DONE! (0, <Scrubbed Time>)\n",
+            "Testing...",
+            None,
+            "\n",
+            "  ",
+            "\r  This ...uncated.",
+            "\n",
+            "  ",
+            "\x1b[1A\r",
+            "  ",
+            "\x1b[1B",
+            "\r",
+            "DONE! (0, <Scrubbed Time>)\n",
         ]
 
     # ----------------------------------------------------------------------
@@ -849,7 +905,9 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "DONE! (0, <Scrubbed Time>)\n",
+            "Testing...",
+            None,
+            "DONE! (0, <Scrubbed Time>)\n",
         ]
 
     # ----------------------------------------------------------------------
@@ -871,17 +929,66 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n", # 0 - 2
-            "  ", "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n", # 3 - 5
-            "  ", "\x1b[1A\r", "  ", "\x1b[1B", "\r", "  ", "Nested...", None, "\n", # 6 - 14
-            "  ", "  ", "\r    Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1), "\n", # 15 - 18
-            "  ", "  ", "\r    Line 3".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1), "\n", # 19 - 22
-            "  ", "  ", "\x1b[2A\r", "  ", "  ", "\r    Line 4".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1), "\n", # 23 - 29
-            "  ", "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1), "\n", # 30 - 33
-            "  ", "  ", "\x1b[2A\r", "  ", "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1), "\n", # 34 - 40
-            "  ", "  ", "\x1b[1A\r", "  ", "  ", "\x1b[1A\r  Nested...", None, "DONE! (0, <Scrubbed Time>)", "\n", # 41 - 49
-            None, "  ", "\r  Line 5".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n", # 50 - 53
-            "  ", "\x1b[1A\r", "  ", "\x1b[1B", "\r", "DONE! (0, <Scrubbed Time>)\n", # 54 - 59
+            "Testing...",
+            None,
+            "\n",  # 0 - 2
+            "  ",
+            "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",  # 3 - 5
+            "  ",
+            "\x1b[1A\r",
+            "  ",
+            "\x1b[1B",
+            "\r",
+            "  ",
+            "Nested...",
+            None,
+            "\n",  # 6 - 14
+            "  ",
+            "  ",
+            "\r    Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1),
+            "\n",  # 15 - 18
+            "  ",
+            "  ",
+            "\r    Line 3".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1),
+            "\n",  # 19 - 22
+            "  ",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "  ",
+            "\r    Line 4".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1),
+            "\n",  # 23 - 29
+            "  ",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1),
+            "\n",  # 30 - 33
+            "  ",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("    ") + 1),
+            "\n",  # 34 - 40
+            "  ",
+            "  ",
+            "\x1b[1A\r",
+            "  ",
+            "  ",
+            "\x1b[1A\r  Nested...",
+            None,
+            "DONE! (0, <Scrubbed Time>)",
+            "\n",  # 41 - 49
+            None,
+            "  ",
+            "\r  Line 5".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",  # 50 - 53
+            "  ",
+            "\x1b[1A\r",
+            "  ",
+            "\x1b[1B",
+            "\r",
+            "DONE! (0, <Scrubbed Time>)\n",  # 54 - 59
         ]
 
     # ----------------------------------------------------------------------
@@ -898,12 +1005,26 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n", # 0 - 2
-            "  ", "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n", # 3 - 5
-            "  ", "\r  Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n", # 6 - 8
-            "  ", "\x1b[2A\r", "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n", # 9 - 13
-            "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n", # 14 - 16
-            "  ", "\x1b[2A\r", "DONE! (0, <Scrubbed Time>)\n", # 17 - 19
+            "Testing...",
+            None,
+            "\n",  # 0 - 2
+            "  ",
+            "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",  # 3 - 5
+            "  ",
+            "\r  Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",  # 6 - 8
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",  # 9 - 13
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",  # 14 - 16
+            "  ",
+            "\x1b[2A\r",
+            "DONE! (0, <Scrubbed Time>)\n",  # 17 - 19
         ]
 
         # preserve_status == False
@@ -918,12 +1039,29 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n",
-            "  ", "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "\x1b[1A\rTesting...", None, "DONE! (0, <Scrubbed Time>)\n",
+            "Testing...",
+            None,
+            "\n",
+            "  ",
+            "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\x1b[1A\rTesting...",
+            None,
+            "DONE! (0, <Scrubbed Time>)\n",
         ]
 
     # ----------------------------------------------------------------------
@@ -940,10 +1078,21 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n",
-            "  ", "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "\x1b[2B", "\r", "DONE! (0, <Scrubbed Time>)\n",
+            "Testing...",
+            None,
+            "\n",
+            "  ",
+            "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\x1b[2B",
+            "\r",
+            "DONE! (0, <Scrubbed Time>)\n",
         ]
 
         # preserve_status == False
@@ -958,10 +1107,24 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n",
-            "  ", "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "\x1b[2B", "\r", "  ", "\x1b[1A\rTesting...", None, "DONE! (0, <Scrubbed Time>)\n",
+            "Testing...",
+            None,
+            "\n",
+            "  ",
+            "\r  Line 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  Line 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\x1b[2B",
+            "\r",
+            "  ",
+            "\x1b[1A\rTesting...",
+            None,
+            "DONE! (0, <Scrubbed Time>)\n",
         ]
 
     # ----------------------------------------------------------------------
@@ -972,22 +1135,51 @@ class TestWriteStatus(object):
 
         with DoneManager.Create(stream, "Testing") as dm:
             dm.WriteStatus("Short 1\nShort 2")
-            dm.WriteStatus("This is longer status 1\nThis is longer status 2\nThis is longer status 3")
+            dm.WriteStatus(
+                "This is longer status 1\nThis is longer status 2\nThis is longer status 3"
+            )
             dm.WriteStatus("Again 1")
 
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n",
-            "  ", "\r  Short 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  Short 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "\r  This is longer status 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  This is longer status 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  This is longer status 3".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[3A\r", "  ", "\r  Again 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[3A\r", "  ", "\x1b[1B", "\r", "DONE! (0, <Scrubbed Time>)\n",
+            "Testing...",
+            None,
+            "\n",
+            "  ",
+            "\r  Short 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  Short 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\r  This is longer status 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  This is longer status 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  This is longer status 3".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[3A\r",
+            "  ",
+            "\r  Again 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[3A\r",
+            "  ",
+            "\x1b[1B",
+            "\r",
+            "DONE! (0, <Scrubbed Time>)\n",
         ]
 
     # ----------------------------------------------------------------------
@@ -1008,20 +1200,56 @@ class TestWriteStatus(object):
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))
 
         assert stream.content == [
-            "Testing...", None, "\n",
-            "  ", "One", "\n",
-            "  ", "\r  Status 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  Status 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "Two", "\n",
-            "  ", "\r  Status 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  Status 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "\r  Status 3".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r  Status 4".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1), "\n",
-            "  ", "\x1b[2A\r", "DONE! (0, <Scrubbed Time>)\n",
+            "Testing...",
+            None,
+            "\n",
+            "  ",
+            "One",
+            "\n",
+            "  ",
+            "\r  Status 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  Status 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "Two",
+            "\n",
+            "  ",
+            "\r  Status 1".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  Status 2".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\r  Status 3".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r  Status 4".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\r".ljust(Capabilities.DEFAULT_COLUMNS - len("  ") + 1),
+            "\n",
+            "  ",
+            "\x1b[2A\r",
+            "DONE! (0, <Scrubbed Time>)\n",
         ]
 
 
@@ -1316,15 +1544,15 @@ class _FakeStream(TextWriter):
     def __init__(
         self,
         *,
-        fileno: int=123,
-        isatty: bool=False,
-        is_headless: bool=True,
-        is_interactive: bool=False,
-        supports_colors: bool=False,
+        fileno: int = 123,
+        isatty: bool = False,
+        is_headless: bool = True,
+        is_interactive: bool = False,
+        supports_colors: bool = False,
     ):
-        self.content: list[Optional[str]]   = []
-        self._fileno                        = fileno
-        self._isatty                        = isatty
+        self.content: list[Optional[str]] = []
+        self._fileno = fileno
+        self._isatty = isatty
 
         Capabilities(
             stream=self,
@@ -1364,7 +1592,7 @@ class _FakeStream(TextWriter):
 # |
 # ----------------------------------------------------------------------
 def _CreateSink(
-    supports_colors: bool=False,
+    supports_colors: bool = False,
 ) -> StringIO:
     sink = StringIO()
 

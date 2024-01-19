@@ -46,15 +46,16 @@ from dbrownell_Common import TextwrapEx
 # |  Public Types
 # |
 # ----------------------------------------------------------------------
-CATASTROPHIC_TASK_FAILURE_RESULT            = -123
+CATASTROPHIC_TASK_FAILURE_RESULT = -123
 
-DISPLAY_COLUMN_WIDTH                        = int(Capabilities.DEFAULT_COLUMNS * 0.50)
-STATUS_COLUMN_WIDTH                         = int(Capabilities.DEFAULT_COLUMNS * 0.30)
+DISPLAY_COLUMN_WIDTH = int(Capabilities.DEFAULT_COLUMNS * 0.50)
+STATUS_COLUMN_WIDTH = int(Capabilities.DEFAULT_COLUMNS * 0.30)
 
 
 # ----------------------------------------------------------------------
 class TransformException(Exception):
     """Exception raised when the Transform function encounters errors when processing a task."""
+
     pass  # pylint: disable=unnecessary-pass
 
 
@@ -69,14 +70,14 @@ class TaskData(object):
 
     # Set this value if the task needs to be processed exclusively with respect to
     # other `TaskData` objects with the same execution lock.
-    execution_lock: Optional[threading.Lock]            = field(default=None)
+    execution_lock: Optional[threading.Lock] = field(default=None)
 
     # The following values will be populated during task execution
-    result: int                             = field(init=False)
-    short_desc: Optional[str]               = field(init=False)
+    result: int = field(init=False)
+    short_desc: Optional[str] = field(init=False)
 
-    execution_time: datetime.timedelta      = field(init=False)
-    log_filename: Path                      = field(init=False)
+    execution_time: datetime.timedelta = field(init=False)
+    log_filename: Path = field(init=False)
 
 
 # ----------------------------------------------------------------------
@@ -106,7 +107,7 @@ class Status(ABC):
         self,
         value: str,
         *,
-        verbose: bool=False,
+        verbose: bool = False,
     ) -> None:
         raise Exception("Abstract method")  # pragma: no cover
 
@@ -121,11 +122,8 @@ class ExecuteTasksTypes(object):
 
         def __call__(
             self,
-            context: Any,                   # TaskData.context
-        ) -> tuple[
-            Path,                           # Log filename
-            "ExecuteTasksTypes.PrepareFuncType",
-        ]:
+            context: Any,  # TaskData.context
+        ) -> tuple[Path, "ExecuteTasksTypes.PrepareFuncType",]:  # (Log filename, PrepareFuncType)
             ...  # pragma: no cover
 
     # ----------------------------------------------------------------------
@@ -136,13 +134,13 @@ class ExecuteTasksTypes(object):
             self,
             on_simple_status_func: Callable[
                 [
-                    str,                    # Status
+                    str,  # Status
                 ],
                 None,
-            ]
+            ],
         ) -> Union[
             tuple[
-                int,                        # Number of steps to execute
+                int,  # Number of steps to execute
                 "ExecuteTasksTypes.ExecuteFuncType",
             ],
             "ExecuteTasksTypes.ExecuteFuncType",
@@ -158,10 +156,10 @@ class ExecuteTasksTypes(object):
             status: Status,
         ) -> Union[
             tuple[
-                int,                        # Return code
-                Optional[str],              # Final status message
+                int,  # Return code
+                Optional[str],  # Final status message
             ],
-            int,                            # Return code
+            int,  # Return code
         ]:
             ...  # pragma: no cover
 
@@ -172,12 +170,12 @@ class TransformResultComplete(object):
     """Complex result returned by a transform function."""
 
     value: Any
-    return_code: Optional[int]              = field(default=None)
-    short_desc: Optional[str]               = field(default=None)
+    return_code: Optional[int] = field(default=None)
+    short_desc: Optional[str] = field(default=None)
 
 
 # ----------------------------------------------------------------------
-TransformedType                             = TypeVar("TransformedType", covariant=True)
+TransformedType = TypeVar("TransformedType", covariant=True)
 
 
 # ----------------------------------------------------------------------
@@ -190,16 +188,16 @@ class TransformTasksExTypes(object):
 
         def __call__(
             self,
-            context: Any,                   # TaskData.context
+            context: Any,  # TaskData.context
             on_simple_status_func: Callable[
                 [
-                    str,                    # Status
+                    str,  # Status
                 ],
                 None,
             ],
         ) -> Union[
             tuple[
-                int,                        # Number of steps to execute
+                int,  # Number of steps to execute
                 "TransformTasksExTypes.TransformFuncType",
             ],
             "TransformTasksExTypes.TransformFuncType",
@@ -245,13 +243,13 @@ class YieldQueueExecutorTypes(object):
             self,
             on_simple_status_func: Callable[
                 [
-                    str,                    # Status
+                    str,  # Status
                 ],
                 None,
             ],
         ) -> Union[
             tuple[
-                int,                        # Number of steps to execute
+                int,  # Number of steps to execute
                 "YieldQueueExecutorTypes.ExecuteFuncType",
             ],
             "YieldQueueExecutorTypes.ExecuteFuncType",
@@ -265,7 +263,7 @@ class YieldQueueExecutorTypes(object):
         def __call__(
             self,
             status: Status,
-        ) -> Optional[str]:                 # Status message
+        ) -> Optional[str]:  # Status message
             ...  # pragma: no cover
 
     # ----------------------------------------------------------------------
@@ -291,9 +289,9 @@ def ExecuteTasks(
     tasks: list[TaskData],
     init_func: ExecuteTasksTypes.InitFuncType,
     *,
-    quiet: bool=False,
-    max_num_threads: Optional[int]=None,
-    refresh_per_second: Optional[float]=None,
+    quiet: bool = False,
+    max_num_threads: Optional[int] = None,
+    refresh_per_second: Optional[float] = None,
 ) -> None:
     """Executes tasks that each output to individual log files."""
 
@@ -355,16 +353,16 @@ def TransformTasksEx(
     tasks: list[TaskData],
     prepare_func: TransformTasksExTypes.PrepareFuncType[TransformedType],
     *,
-    quiet: bool=False,
-    max_num_threads: Optional[int]=None,
-    refresh_per_second: Optional[float]=None,
-    no_compress_tasks: bool=False,
-    return_exceptions: bool=False,
+    quiet: bool = False,
+    max_num_threads: Optional[int] = None,
+    refresh_per_second: Optional[float] = None,
+    no_compress_tasks: bool = False,
+    return_exceptions: bool = False,
 ) -> list[
     Union[
         None,
         TransformedType,
-        Exception,                          # If `return_exceptions` is True and an exception was encountered
+        Exception,  # If `return_exceptions` is True and an exception was encountered
     ],
 ]:
     """Executes functions that return values; use this variation for tasks that are transformed in multiple steps or require custom preparation."""
@@ -376,11 +374,7 @@ def TransformTasksEx(
         if max_num_threads:
             num_threads = min(num_threads, max_num_threads)
 
-        if (
-            no_compress_tasks
-            or num_threads < cpu_count
-            or num_threads == 1
-        ):
+        if no_compress_tasks or num_threads < cpu_count or num_threads == 1:
             impl_func = _TransformNotCompressed
         else:
             impl_func = _TransformCompressed
@@ -405,16 +399,16 @@ def TransformTasks(
     tasks: list[TaskData],
     transform_func: TransformTasksTypes.TransformFuncType[TransformedType],
     *,
-    quiet: bool=False,
-    max_num_threads: Optional[int]=None,
-    refresh_per_second: Optional[float]=None,
-    no_compress_tasks: bool=False,
-    return_exceptions: bool=False,
+    quiet: bool = False,
+    max_num_threads: Optional[int] = None,
+    refresh_per_second: Optional[float] = None,
+    no_compress_tasks: bool = False,
+    return_exceptions: bool = False,
 ) -> list[
     Union[
         None,
         TransformedType,
-        Exception,                          # If `return_exceptions` is True and an exception was encountered
+        Exception,  # If `return_exceptions` is True and an exception was encountered
     ],
 ]:
     """Executes functions that return values; use this function for single-step tasks that do not require extensive preparation."""
@@ -447,9 +441,9 @@ def YieldQueueExecutor(
     dm: DoneManager,
     desc: str,
     *,
-    quiet: bool=False,
-    max_num_threads: Optional[int]=None,
-    refresh_per_second: Optional[float]=None,
+    quiet: bool = False,
+    max_num_threads: Optional[int] = None,
+    refresh_per_second: Optional[float] = None,
 ) -> Iterator[YieldQueueExecutorTypes.EnqueueFuncType]:
     """Yields a callable that can be used to enqueue tasks executed by workers running across multiple threads."""
 
@@ -460,10 +454,7 @@ def YieldQueueExecutor(
             None,
             dm,
             desc,
-            [
-                TaskData("", thread_index)
-                for thread_index in range(num_threads)
-            ],
+            [TaskData("", thread_index) for thread_index in range(num_threads)],
             quiet=quiet,
             refresh_per_second=refresh_per_second,
         ) as (status_factories, on_task_complete_func):
@@ -500,7 +491,11 @@ def YieldQueueExecutor(
                                 task_desc, prepare_func = queue.pop(0)
 
                             # ----------------------------------------------------------------------
-                            def Init(*args, **kwargs) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:  # pylint: disable=unused-argument
+                            def Init(
+                                *args, **kwargs
+                            ) -> tuple[
+                                Path, ExecuteTasksTypes.PrepareFuncType
+                            ]:  # pylint: disable=unused-argument
                                 # ----------------------------------------------------------------------
                                 def Prepare(
                                     on_simple_status_func: Callable[[str], None],
@@ -511,7 +506,9 @@ def YieldQueueExecutor(
                                     prepare_result = prepare_func(on_simple_status_func)
 
                                     num_steps: Optional[int] = None
-                                    execute_func: Optional[YieldQueueExecutorTypes.ExecuteFuncType] = None
+                                    execute_func: Optional[
+                                        YieldQueueExecutorTypes.ExecuteFuncType
+                                    ] = None
 
                                     if isinstance(prepare_result, tuple):
                                         num_steps, execute_func = prepare_result
@@ -554,8 +551,7 @@ def YieldQueueExecutor(
                 max_workers=num_threads,
             ) as executor:
                 futures = [
-                    executor.submit(Impl, thread_index)
-                    for thread_index in range(num_threads)
+                    executor.submit(Impl, thread_index) for thread_index in range(num_threads)
                 ]
 
                 yield Enqueue
@@ -615,12 +611,7 @@ def _GenerateStatusInfo(
     *,
     quiet: bool,
     refresh_per_second: Optional[float],
-) -> Iterator[
-    tuple[
-        list[_StatusFactory],
-        Callable[[TaskData], None],         # on_task_complete_func
-    ],
-]:
+) -> Iterator[tuple[list[_StatusFactory], Callable[[TaskData], None],],]:
     success_count = 0
     error_count = 0
     warning_count = 0
@@ -629,7 +620,7 @@ def _GenerateStatusInfo(
 
     # Create the heading
     if desc.endswith("..."):
-        desc = desc[:-len("...")]
+        desc = desc[: -len("...")]
 
     heading = desc
 
@@ -679,7 +670,11 @@ def _GenerateStatusInfo(
 
         # ----------------------------------------------------------------------
 
-        with (_GenerateProgressStatusInfo if dm.capabilities.is_interactive else _GenerateNoopStatusInfo)(
+        with (
+            _GenerateProgressStatusInfo
+            if dm.capabilities.is_interactive
+            else _GenerateNoopStatusInfo
+        )(
             num_tasks_display_value,
             execute_dm,
             tasks,
@@ -700,12 +695,7 @@ def _GenerateProgressStatusInfo(
     *,
     quiet: bool,
     refresh_per_second: Optional[float],
-) -> Iterator[
-    tuple[
-        list[_StatusFactory],
-        Callable[[TaskData], None],         # on_task_complete_func
-    ],
-]:
+) -> Iterator[tuple[list[_StatusFactory], Callable[[TaskData], None],],]:
     with dm.YieldStdout() as stdout_context:
         stdout_context.persist_content = False
 
@@ -713,7 +703,9 @@ def _GenerateProgressStatusInfo(
         # rather than referencing `sys.stdout` directly, but it is really hard to work with mocked
         # stream as mocks will create mocks for everything called on the mock. Use sys.stdout
         # directly to avoid that particular problem.
-        assert stdout_context.stream is sys.stdout or isinstance(stdout_context.stream, MagicMock), stdout_context.stream
+        assert stdout_context.stream is sys.stdout or isinstance(
+            stdout_context.stream, MagicMock
+        ), stdout_context.stream
 
         progress_bar = Progress(
             *Progress.get_default_columns(),
@@ -728,7 +720,7 @@ def _GenerateProgressStatusInfo(
         def CreateDescription(
             value: str,
             *,
-            indent: bool=True,
+            indent: bool = True,
         ) -> str:
             return TextwrapEx.BoundedLJust(
                 "{}{}{}".format(
@@ -746,10 +738,10 @@ def _GenerateProgressStatusInfo(
                 self,
                 task_id: TaskID,
             ):
-                self._task_id                           = task_id
+                self._task_id = task_id
 
-                self._num_steps: Optional[int]          = None
-                self._current_step: Optional[int]       = None
+                self._num_steps: Optional[int] = None
+                self._current_step: Optional[int] = None
 
             # ----------------------------------------------------------------------
             def SetNumSteps(
@@ -817,16 +809,20 @@ def _GenerateProgressStatusInfo(
                 self,
                 value: str,
                 *,
-                verbose: bool=False,
+                verbose: bool = False,
             ) -> None:
                 if verbose:
                     if not dm.is_verbose:
                         return
 
-                    assert TextwrapEx.VERBOSE_COLOR_ON == "\033[;7m", "Ensure that the colors stay in sync"
+                    assert (
+                        TextwrapEx.VERBOSE_COLOR_ON == "\033[;7m"
+                    ), "Ensure that the colors stay in sync"
                     prefix = "[black on white]VERBOSE:[/] "
                 else:
-                    assert TextwrapEx.INFO_COLOR_ON == "\033[;7m", "Ensure that the colors stay in sync"
+                    assert (
+                        TextwrapEx.INFO_COLOR_ON == "\033[;7m"
+                    ), "Ensure that the colors stay in sync"
                     prefix = "[black on white]INFO:[/] "
 
                 progress_bar.print(
@@ -847,7 +843,7 @@ def _GenerateProgressStatusInfo(
                 self,
                 task_id: TaskID,
             ):
-                self._task_id               = task_id
+                self._task_id = task_id
 
             # ----------------------------------------------------------------------
             @contextmanager
@@ -895,11 +891,15 @@ def _GenerateProgressStatusInfo(
         ) -> None:
             if not quiet and task_data.result != 0:
                 if task_data.result < 0:
-                    assert TextwrapEx.ERROR_COLOR_ON == "\033[31;1m", "Ensure that the colors stay in sync"
+                    assert (
+                        TextwrapEx.ERROR_COLOR_ON == "\033[31;1m"
+                    ), "Ensure that the colors stay in sync"
                     color = "red"
                     header = "ERROR"
                 else:
-                    assert TextwrapEx.WARNING_COLOR_ON == "\033[33;1m", "Ensure that the colors stay in sync"
+                    assert (
+                        TextwrapEx.WARNING_COLOR_ON == "\033[33;1m"
+                    ), "Ensure that the colors stay in sync"
                     color = "yellow"
                     header = "WARNING"
 
@@ -910,8 +910,12 @@ def _GenerateProgressStatusInfo(
                         header=header,
                         name=task_data.display,
                         result=task_data.result,
-                        short_desc=" ({})".format(task_data.short_desc) if task_data.short_desc else "",
-                        suffix=str(task_data.log_filename) if dm.capabilities.is_headless else "[link=file:///{}]View Log[/]".format(
+                        short_desc=" ({})".format(task_data.short_desc)
+                        if task_data.short_desc
+                        else "",
+                        suffix=str(task_data.log_filename)
+                        if dm.capabilities.is_headless
+                        else "[link=file:///{}]View Log[/]".format(
                             task_data.log_filename.as_posix(),
                         ),
                     ),
@@ -987,19 +991,14 @@ def _GenerateProgressStatusInfo(
 # ----------------------------------------------------------------------
 @contextmanager
 def _GenerateNoopStatusInfo(
-    num_tasks_display_value: Optional[int], # pylint: disable=unused-argument
+    num_tasks_display_value: Optional[int],  # pylint: disable=unused-argument
     dm: DoneManager,
     tasks: list[TaskData],
     on_task_complete_func: Callable[[TaskData], tuple[int, int, int]],
     *,
     quiet: bool,
-    refresh_per_second: Optional[float],    # pylint: disable=unused-argument
-) -> Iterator[
-    tuple[
-        list[_StatusFactory],
-        Callable[[TaskData], None],         # on_task_complete_func
-    ],
-]:
+    refresh_per_second: Optional[float],  # pylint: disable=unused-argument
+) -> Iterator[tuple[list[_StatusFactory], Callable[[TaskData], None],],]:
     # ----------------------------------------------------------------------
     class StatusImpl(_InternalStatus):  # pylint: disable=missing-class-docstring
         # ----------------------------------------------------------------------
@@ -1022,7 +1021,9 @@ def _GenerateNoopStatusInfo(
     class StatusFactory(_StatusFactory):  # pylint: disable=missing-class-docstring
         # ----------------------------------------------------------------------
         @contextmanager
-        def CreateStatus(self, *args, **kwargs) -> Iterator[_InternalStatus]:  # pylint: disable=unused-argument
+        def CreateStatus(
+            self, *args, **kwargs
+        ) -> Iterator[_InternalStatus]:  # pylint: disable=unused-argument
             yield StatusImpl()
 
         # ----------------------------------------------------------------------
@@ -1040,7 +1041,9 @@ def _GenerateNoopStatusInfo(
                 name=task_data.display,
                 result=task_data.result,
                 short_desc=" ({})".format(task_data.short_desc) if task_data.short_desc else "",
-                suffix=str(task_data.log_filename) if dm.capabilities.is_headless else TextwrapEx.CreateAnsiHyperLink(
+                suffix=str(task_data.log_filename)
+                if dm.capabilities.is_headless
+                else TextwrapEx.CreateAnsiHyperLink(
                     "file:///{}".format(task_data.log_filename.as_posix()),
                     "View Log",
                 ),
@@ -1180,7 +1183,11 @@ def _YieldTemporaryDirectory(
             return
 
         if dm.capabilities.is_headless:
-            dm.WriteInfo("\nThe temporary working directory '{}' was preserved due to errors encountered while executing tasks.".format(temp_directory))
+            dm.WriteInfo(
+                "\nThe temporary working directory '{}' was preserved due to errors encountered while executing tasks.".format(
+                    temp_directory
+                )
+            )
         else:
             dm.WriteInfo(
                 "\nThe {} was preserved due to errors encountered while executing tasks.".format(
@@ -1213,21 +1220,20 @@ def _TransformCompressed(
     Union[
         None,
         TransformedType,
-        Exception,                          # If `return_exceptions` is True and an exception was encountered
+        Exception,  # If `return_exceptions` is True and an exception was encountered
     ],
 ]:
     assert num_threads > 1, num_threads
 
-    all_results: list[None | TransformedType | Exception] = [None, ] * len(tasks)
+    all_results: list[None | TransformedType | Exception] = [
+        None,
+    ] * len(tasks)
 
     with _GenerateStatusInfo(
         len(tasks),
         dm,
         desc,
-        [
-            TaskData("", thread_index)
-            for thread_index in range(num_threads)
-        ],
+        [TaskData("", thread_index) for thread_index in range(num_threads)],
         quiet=quiet,
         refresh_per_second=refresh_per_second,
     ) as (status_factories, on_task_complete_func):
@@ -1329,10 +1335,7 @@ def _TransformCompressed(
         with ThreadPoolExecutor(
             max_workers=num_threads,
         ) as executor:
-            futures = [
-                executor.submit(Impl, thread_index)
-                for thread_index in range(num_threads)
-            ]
+            futures = [executor.submit(Impl, thread_index) for thread_index in range(num_threads)]
 
             for future in futures:
                 future.result()
@@ -1356,7 +1359,7 @@ def _TransformNotCompressed(
     Union[
         None,
         TransformedType,
-        Exception,                          # If `return_exceptions` is True and an exception was encountered
+        Exception,  # If `return_exceptions` is True and an exception was encountered
     ],
 ]:
     """Executes tasks with one executor per task."""
@@ -1373,7 +1376,9 @@ def _TransformNotCompressed(
     # ----------------------------------------------------------------------
 
     with ExitStack(RestoreTaskContext):
-        all_results: list[None | TransformedType | Exception] = [None, ] * len(tasks)
+        all_results: list[None | TransformedType | Exception] = [
+            None,
+        ] * len(tasks)
 
         # ----------------------------------------------------------------------
         def Init(

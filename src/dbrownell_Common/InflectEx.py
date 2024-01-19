@@ -19,4 +19,4 @@ import inflect as _inflect_mod
 
 
 # ----------------------------------------------------------------------
-inflect                                     = _inflect_mod.engine()
+inflect = _inflect_mod.engine()

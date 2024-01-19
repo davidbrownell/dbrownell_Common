@@ -26,7 +26,7 @@ from dbrownell_Common.Streams.TextWriter import TextWriter
 
 
 # ----------------------------------------------------------------------
-TextWriterT                                 = TextIO | TextWriter
+TextWriterT = TextIO | TextWriter
 
 
 # ----------------------------------------------------------------------
@@ -39,12 +39,12 @@ class Capabilities(object):
     # |  Public Types
     # |
     # ----------------------------------------------------------------------
-    DEFAULT_COLUMNS: int                                = 180
+    DEFAULT_COLUMNS: int = 180
 
-    SIMULATE_TERMINAL_COLUMNS_ENV_VAR: str              = "COLUMNS"
-    SIMULATE_TERMINAL_INTERACTIVE_ENV_VAR: str          = "SIMULATE_TERMINAL_CAPABILITIES_IS_INTERACTIVE"
-    SIMULATE_TERMINAL_COLORS_ENV_VAR: str               = "SIMULATE_TERMINAL_CAPABILITIES_SUPPORTS_COLORS"
-    SIMULATE_TERMINAL_HEADLESS_ENV_VAR: str             = "SIMULATE_TERMINAL_CAPABILITIES_IS_HEADLESS"
+    SIMULATE_TERMINAL_COLUMNS_ENV_VAR: str = "COLUMNS"
+    SIMULATE_TERMINAL_INTERACTIVE_ENV_VAR: str = "SIMULATE_TERMINAL_CAPABILITIES_IS_INTERACTIVE"
+    SIMULATE_TERMINAL_COLORS_ENV_VAR: str = "SIMULATE_TERMINAL_CAPABILITIES_SUPPORTS_COLORS"
+    SIMULATE_TERMINAL_HEADLESS_ENV_VAR: str = "SIMULATE_TERMINAL_CAPABILITIES_IS_HEADLESS"
 
     # ----------------------------------------------------------------------
     # |
@@ -54,13 +54,13 @@ class Capabilities(object):
     def __init__(
         self,
         *,
-        columns: Optional[int]=None,
-        is_headless: Optional[bool]=None,
-        is_interactive: Optional[bool]=None,
-        supports_colors: Optional[bool]=None,
-        stream: Optional[TextWriterT]=None,
-        no_column_warning: bool=False,
-        ignore_environment: bool=False,
+        columns: Optional[int] = None,
+        is_headless: Optional[bool] = None,
+        is_interactive: Optional[bool] = None,
+        supports_colors: Optional[bool] = None,
+        stream: Optional[TextWriterT] = None,
+        no_column_warning: bool = False,
+        ignore_environment: bool = False,
     ):
         # columns
         explicit_columns = False
@@ -68,7 +68,11 @@ class Capabilities(object):
         if columns is not None:
             explicit_columns = True
         else:
-            value = os.getenv(self.__class__.SIMULATE_TERMINAL_COLUMNS_ENV_VAR) if not ignore_environment else None
+            value = (
+                os.getenv(self.__class__.SIMULATE_TERMINAL_COLUMNS_ENV_VAR)
+                if not ignore_environment
+                else None
+            )
             if value is not None:
                 columns = int(value)
                 explicit_columns = True
@@ -82,7 +86,11 @@ class Capabilities(object):
         if is_interactive is not None:
             explicit_is_interactive = True
         else:
-            value = os.getenv(self.__class__.SIMULATE_TERMINAL_INTERACTIVE_ENV_VAR) if not ignore_environment else None
+            value = (
+                os.getenv(self.__class__.SIMULATE_TERMINAL_INTERACTIVE_ENV_VAR)
+                if not ignore_environment
+                else None
+            )
             if value is not None:
                 is_interactive = value != "0"
                 explicit_is_interactive = True
@@ -95,7 +103,11 @@ class Capabilities(object):
         if is_headless is not None:
             explicit_is_headless = True
         else:
-            value = os.getenv(self.__class__.SIMULATE_TERMINAL_HEADLESS_ENV_VAR) if not ignore_environment else None
+            value = (
+                os.getenv(self.__class__.SIMULATE_TERMINAL_HEADLESS_ENV_VAR)
+                if not ignore_environment
+                else None
+            )
             if value is not None:
                 is_headless = value != "0"
                 explicit_is_headless = True
@@ -108,7 +120,11 @@ class Capabilities(object):
         if supports_colors is not None:
             explicit_supports_colors = True
         else:
-            value = os.getenv(self.__class__.SIMULATE_TERMINAL_COLORS_ENV_VAR) if not ignore_environment else None
+            value = (
+                os.getenv(self.__class__.SIMULATE_TERMINAL_COLORS_ENV_VAR)
+                if not ignore_environment
+                else None
+            )
             if value is not None:
                 supports_colors = value != "0"
                 explicit_supports_colors = True
@@ -116,15 +132,15 @@ class Capabilities(object):
                 supports_colors = is_interactive
 
         # Commit the values
-        self.columns                        = columns
-        self.is_headless                    = is_headless
-        self.is_interactive                 = is_interactive
-        self.supports_colors                = supports_colors
+        self.columns = columns
+        self.is_headless = is_headless
+        self.is_interactive = is_interactive
+        self.supports_colors = supports_colors
 
-        self.explicit_columns               = explicit_columns
-        self.explicit_is_headless           = explicit_is_headless
-        self.explicit_is_interactive        = explicit_is_interactive
-        self.explicit_supports_colors       = explicit_supports_colors
+        self.explicit_columns = explicit_columns
+        self.explicit_is_headless = explicit_is_headless
+        self.explicit_is_interactive = explicit_is_interactive
+        self.explicit_supports_colors = explicit_supports_colors
 
         # Validate the settings for sys.stdout
         if stream:
@@ -182,8 +198,8 @@ class Capabilities(object):
                                 ),
                             )
 
-                except ImportError:         # pragma: no cover
-                    pass                    # pragma: no cover
+                except ImportError:  # pragma: no cover
+                    pass  # pragma: no cover
 
                 self.__class__._processed_stdout = True
 
@@ -250,7 +266,9 @@ class Capabilities(object):
         capabilities: "Capabilities",
     ) -> TextWriterT:
         if getattr(stream, cls._EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME, None) is not None:
-            raise Exception("Capabilities are assigned to a stream when it is first created and cannot be changed; consider using the `Clone` method.")
+            raise Exception(
+                "Capabilities are assigned to a stream when it is first created and cannot be changed; consider using the `Clone` method."
+            )
 
         setattr(stream, cls._EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME, capabilities)
         return stream
@@ -259,16 +277,18 @@ class Capabilities(object):
     def Clone(
         self,
         *,
-        columns: Optional[int]=None,
-        is_headless: Optional[bool]=None,
-        is_interactive: Optional[bool]=None,
-        supports_colors: Optional[bool]=None,
+        columns: Optional[int] = None,
+        is_headless: Optional[bool] = None,
+        is_interactive: Optional[bool] = None,
+        supports_colors: Optional[bool] = None,
     ) -> "Capabilities":
         return self.__class__(
             columns=columns if columns is not None else self.columns,
             is_headless=is_headless if is_headless is not None else self.is_headless,
             is_interactive=is_interactive if is_interactive is not None else self.is_interactive,
-            supports_colors=supports_colors if supports_colors is not None else self.supports_colors,
+            supports_colors=supports_colors
+            if supports_colors is not None
+            else self.supports_colors,
         )
 
     # ----------------------------------------------------------------------
@@ -277,9 +297,9 @@ class Capabilities(object):
 
         def CreateRichConsole(
             self,
-            file: Optional[TextWriterT]=None,
+            file: Optional[TextWriterT] = None,
             *,
-            width: Optional[int]=None,
+            width: Optional[int] = None,
         ) -> Console:
             """Creates a `rich` `Console` instance."""
 
@@ -308,8 +328,8 @@ class Capabilities(object):
     # |  Private Types
     # |
     # ----------------------------------------------------------------------
-    _EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME: str          = "__stream_capabilities"
-    _processed_stdout: bool                             = False
+    _EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME: str = "__stream_capabilities"
+    _processed_stdout: bool = False
 
     # ----------------------------------------------------------------------
     # |

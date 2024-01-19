@@ -37,12 +37,12 @@ class StreamDecorator(TextWriter):
     # |  Public Types
     # |
     # ----------------------------------------------------------------------
-    PrefixOrSuffixT                         = (
+    PrefixOrSuffixT = (
         None
         | str
         | Callable[
             [
-                int,                        # column offset
+                int,  # column offset
             ],
             str,
         ]
@@ -56,19 +56,21 @@ class StreamDecorator(TextWriter):
     def __init__(
         self,
         stream_or_streams: None | TextWriterT | list[TextWriterT],
-        line_prefix: "StreamDecorator.PrefixOrSuffixT"=None,
-        line_suffix: "StreamDecorator.PrefixOrSuffixT"=None,
-        prefix: "StreamDecorator.PrefixOrSuffixT"=None,
-        suffix: "StreamDecorator.PrefixOrSuffixT"=None,
+        line_prefix: "StreamDecorator.PrefixOrSuffixT" = None,
+        line_suffix: "StreamDecorator.PrefixOrSuffixT" = None,
+        prefix: "StreamDecorator.PrefixOrSuffixT" = None,
+        suffix: "StreamDecorator.PrefixOrSuffixT" = None,
         *,
-        decorate_empty_lines: bool=True,
+        decorate_empty_lines: bool = True,
     ):
         if stream_or_streams is None:
             streams = []
         elif isinstance(stream_or_streams, list):
             streams = stream_or_streams
         else:
-            streams = [stream_or_streams, ]
+            streams = [
+                stream_or_streams,
+            ]
 
         del stream_or_streams
 
@@ -89,18 +91,18 @@ class StreamDecorator(TextWriter):
 
         # ----------------------------------------------------------------------
 
-        self._streams                       = streams
-        self._line_prefix_func              = PrefixOrSuffixTToCallable(line_prefix)
-        self._line_suffix_func              = PrefixOrSuffixTToCallable(line_suffix)
-        self._prefix_func                   = PrefixOrSuffixTToCallable(prefix)
-        self._suffix_func                   = PrefixOrSuffixTToCallable(suffix)
-        self._decorate_empty_lines          = decorate_empty_lines
+        self._streams = streams
+        self._line_prefix_func = PrefixOrSuffixTToCallable(line_prefix)
+        self._line_suffix_func = PrefixOrSuffixTToCallable(line_suffix)
+        self._prefix_func = PrefixOrSuffixTToCallable(prefix)
+        self._suffix_func = PrefixOrSuffixTToCallable(suffix)
+        self._decorate_empty_lines = decorate_empty_lines
 
         self._state: StreamDecorator._State = StreamDecorator._State.Prefix
-        self._col_offset                    = 0
-        self._wrote_content                 = False
+        self._col_offset = 0
+        self._wrote_content = False
 
-        self._isatty                        = any(getattr(stream, "isatty", lambda: False)() for stream in self._streams)
+        self._isatty = any(getattr(stream, "isatty", lambda: False)() for stream in self._streams)
 
         # Set the capabilities for this stream
         if self._streams:
@@ -205,7 +207,7 @@ class StreamDecorator(TextWriter):
     def GetCompleteLinePrefix(
         self,
         *,
-        include_self: bool=True,
+        include_self: bool = True,
     ) -> str:
         prefixes = self._GetLinePrefixInfo(0, include_self=include_self)[1]
 
@@ -216,7 +218,7 @@ class StreamDecorator(TextWriter):
     class YieldStdoutContext(object):
         stream: TextWriterT
         line_prefix: str
-        persist_content: bool               = field(kw_only=True)
+        persist_content: bool = field(kw_only=True)
 
     @contextmanager
     def YieldStdout(self) -> Iterator[YieldStdoutContext]:
@@ -234,7 +236,9 @@ class StreamDecorator(TextWriter):
             return
 
         if not self.has_stdout:
-            raise Exception("This functionality can only be used with streams that ultimately write to `sys.stdout`")
+            raise Exception(
+                "This functionality can only be used with streams that ultimately write to `sys.stdout`"
+            )
 
         yield context
 
@@ -244,10 +248,10 @@ class StreamDecorator(TextWriter):
     # |
     # ----------------------------------------------------------------------
     class _State(Enum):
-        Prefix                              = auto()
-        Writing                             = auto()
-        Suffix                              = auto()
-        Closed                              = auto()
+        Prefix = auto()
+        Writing = auto()
+        Suffix = auto()
+        Closed = auto()
 
     # ----------------------------------------------------------------------
     # |
@@ -263,20 +267,16 @@ class StreamDecorator(TextWriter):
         if not content:
             return chars_written
 
-        for line, has_newline in self.__class__._EnumLines(content):  # pylint: disable=protected-access
-            if (
-                self._col_offset == 0
-                and (line or self._decorate_empty_lines)
-            ):
+        for line, has_newline in self.__class__._EnumLines(
+            content
+        ):  # pylint: disable=protected-access
+            if self._col_offset == 0 and (line or self._decorate_empty_lines):
                 chars_written += self._write_raw(self._line_prefix_func(self._col_offset))
 
             chars_written += self._write_raw(line)
 
             if has_newline:
-                if (
-                    self._col_offset != 0
-                    or self._decorate_empty_lines
-                ):
+                if self._col_offset != 0 or self._decorate_empty_lines:
                     chars_written += self._write_raw(self._line_suffix_func(self._col_offset))
 
                 chars_written += self._write_raw("\n")
@@ -305,7 +305,9 @@ class StreamDecorator(TextWriter):
                     "ignore",
                 ]:
                     try:
-                        decoded_content = content.encode("utf-8").decode("ascii", decode_error_method)
+                        decoded_content = content.encode("utf-8").decode(
+                            "ascii", decode_error_method
+                        )
                         stream.write(decoded_content)
 
                         wrote_content = True
@@ -375,15 +377,14 @@ class StreamDecorator(TextWriter):
         column: int,
         *,
         include_self: bool,
-    ) -> tuple[
-        int,                                # column offset
-        list[str],                          # prefix values
-    ]:
+    ) -> tuple[int, list[str],]:  # column offset  # prefix values
         if not self._streams:
             return column, []
 
         if isinstance(self._streams[0], StreamDecorator):
-            column, prefixes = self._streams[0]._GetLinePrefixInfo(column, include_self=True)  # pylint: disable=protected-access
+            column, prefixes = self._streams[0]._GetLinePrefixInfo(
+                column, include_self=True
+            )  # pylint: disable=protected-access
         else:
             prefixes = []
 

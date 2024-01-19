@@ -24,7 +24,7 @@ from typing import Optional
 
 # ----------------------------------------------------------------------
 def CreateTempFileName(
-    suffix: Optional[str]=None,
+    suffix: Optional[str] = None,
 ) -> Path:
     filename_handle, filename = tempfile.mkstemp(suffix=suffix)
 
@@ -36,7 +36,7 @@ def CreateTempFileName(
 
 # ----------------------------------------------------------------------
 def CreateTempDirectory(
-    suffix: Optional[str]=None,
+    suffix: Optional[str] = None,
 ) -> Path:
     directory = CreateTempFileName(suffix=suffix)
 

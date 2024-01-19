@@ -25,7 +25,11 @@ import typer
 from typer.core import TyperGroup
 
 from dbrownell_Common import SubprocessEx
-from dbrownell_Common.Streams.DoneManager import DoneManager, DoneManagerException, Flags as DoneManagerFlags
+from dbrownell_Common.Streams.DoneManager import (
+    DoneManager,
+    DoneManagerException,
+    Flags as DoneManagerFlags,
+)
 
 
 # ----------------------------------------------------------------------
@@ -37,7 +41,7 @@ class NaturalOrderGrouper(TyperGroup):
 
 
 # ----------------------------------------------------------------------
-app                                         = typer.Typer(
+app = typer.Typer(
     cls=NaturalOrderGrouper,
     help=__doc__,
     no_args_is_help=True,
@@ -47,11 +51,60 @@ app                                         = typer.Typer(
 
 
 # ----------------------------------------------------------------------
+@app.command("Black", no_args_is_help=False)
+def Black(
+    format: Annotated[
+        bool,
+        typer.Option(
+            "--format",
+            help="Format the files; the default behavior is to check if any files need to be formatted..",
+        ),
+    ] = False,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="Write verbose information to the terminal.")
+    ] = False,
+    debug: Annotated[
+        bool, typer.Option("--debug", help="Write debug information to the terminal.")
+    ] = False,
+) -> None:
+    """Runs black on the python code."""
+
+    with DoneManager.CreateCommandLine(
+        flags=DoneManagerFlags.Create(verbose=verbose, debug=debug),
+    ) as dm:
+        with dm.Nested("Running black...") as black_dm:
+            command_line = 'black {}{} "{}"'.format(
+                "" if format else "--check ",
+                "--verbose " if black_dm.is_verbose else "",
+                Path(__file__).parent,
+            )
+
+            black_dm.WriteVerbose("Command Line: {}\n\n".format(command_line))
+
+            with black_dm.YieldStream() as stream:
+                black_dm.result = SubprocessEx.Stream(command_line, stream)
+                if black_dm.result != 0:
+                    return
+
+
+# ----------------------------------------------------------------------
 @app.command("Pylint", no_args_is_help=False)
 def Pylint(
-    min_score: Annotated[float, typer.Option("--min-score", min=0.0, max=10.0, help="Fail if the total score is less than this value.")]=9.5,
-    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
-    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
+    min_score: Annotated[
+        float,
+        typer.Option(
+            "--min-score",
+            min=0.0,
+            max=10.0,
+            help="Fail if the total score is less than this value.",
+        ),
+    ] = 9.5,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="Write verbose information to the terminal.")
+    ] = False,
+    debug: Annotated[
+        bool, typer.Option("--debug", help="Write debug information to the terminal.")
+    ] = False,
 ) -> None:
     """Runs pylint on the python code."""
 
@@ -59,7 +112,9 @@ def Pylint(
         flags=DoneManagerFlags.Create(verbose=verbose, debug=debug),
     ) as dm:
         with dm.Nested("Running pylint...") as pylint_dm:
-            command_line = 'pylint {}/src --fail-under {}'.format(Path(__file__).parent, min_score)
+            command_line = 'pylint "{}/src" --fail-under {}'.format(
+                Path(__file__).parent, min_score
+            )
 
             pylint_dm.WriteVerbose("Command Line: {}\n\n".format(command_line))
 
@@ -72,12 +127,28 @@ def Pylint(
 # ----------------------------------------------------------------------
 @app.command("Test", no_args_is_help=False)
 def Test(
-    code_coverage: Annotated[bool, typer.Option("--code-coverage", help="Run tests with code coverage information.")]=False,
-    benchmark: Annotated[bool, typer.Option("--benchmark", help="Run benchmark tests.")]=False,
-    min_coverage: Annotated[Optional[float], typer.Option("--min-coverage", min=0.0, max=100.0, help="Fail if code coverage percentage is less than this value.")]=None,
-    pytest_args: Annotated[Optional[str], typer.Option("--pytest-args", help="Additional arguments passed to pytest.")]=None,
-    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
-    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
+    code_coverage: Annotated[
+        bool, typer.Option("--code-coverage", help="Run tests with code coverage information.")
+    ] = False,
+    benchmark: Annotated[bool, typer.Option("--benchmark", help="Run benchmark tests.")] = False,
+    min_coverage: Annotated[
+        Optional[float],
+        typer.Option(
+            "--min-coverage",
+            min=0.0,
+            max=100.0,
+            help="Fail if code coverage percentage is less than this value.",
+        ),
+    ] = None,
+    pytest_args: Annotated[
+        Optional[str], typer.Option("--pytest-args", help="Additional arguments passed to pytest.")
+    ] = None,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="Write verbose information to the terminal.")
+    ] = False,
+    debug: Annotated[
+        bool, typer.Option("--debug", help="Write debug information to the terminal.")
+    ] = False,
 ) -> None:
     """Tests the python code."""
 
@@ -89,15 +160,17 @@ def Test(
         elif min_coverage:
             code_coverage = True
 
-        assert (
-            (code_coverage and min_coverage)
-            or (not code_coverage and min_coverage is None)
-        ), (code_coverage, min_coverage)
+        assert (code_coverage and min_coverage) or (not code_coverage and min_coverage is None), (
+            code_coverage,
+            min_coverage,
+        )
 
         with dm.Nested("Testing...") as test_dm:
-            command_line = 'pytest {} {} --capture=no --verbose -vv {} tests/'.format(
+            command_line = "pytest {} {} --capture=no --verbose -vv {} tests/".format(
                 "--benchmark-skip" if not benchmark else "",
-                "" if not code_coverage else "--cov=dbrownell_Common --cov-fail-under={} ".format(min_coverage),
+                ""
+                if not code_coverage
+                else "--cov=dbrownell_Common --cov-fail-under={} ".format(min_coverage),
                 "" if not pytest_args else pytest_args,
             )
 
@@ -118,9 +191,18 @@ def Test(
 # ----------------------------------------------------------------------
 @app.command("UpdateVersion", no_args_is_help=False)
 def UpdateVersion(
-    auto_sem_ver_version: Annotated[str, typer.Option("--auto-sem-ver-version", help="Version of the autosemver image on dockerhub.")]="0.6.7",
-    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
-    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
+    auto_sem_ver_version: Annotated[
+        str,
+        typer.Option(
+            "--auto-sem-ver-version", help="Version of the autosemver image on dockerhub."
+        ),
+    ] = "0.6.7",
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="Write verbose information to the terminal.")
+    ] = False,
+    debug: Annotated[
+        bool, typer.Option("--debug", help="Write debug information to the terminal.")
+    ] = False,
 ) -> None:
     """Updates the library version found in src/dbrownell_Common/__init__.py based on git changes."""
 
@@ -135,7 +217,7 @@ def UpdateVersion(
             lambda: "The version is '{}'".format(auto_sem_ver or "<Error>"),
         ) as version_dm:
             with version_dm.Nested("Pulling image...") as pull_dm:
-                command_line = 'docker pull dbrownell/autosemver:{}'.format(auto_sem_ver_version)
+                command_line = "docker pull dbrownell/autosemver:{}".format(auto_sem_ver_version)
 
                 pull_dm.WriteVerbose("Command Line: {}\n\n".format(command_line))
 
@@ -183,9 +265,16 @@ def UpdateVersion(
 # ----------------------------------------------------------------------
 @app.command("Package", no_args_is_help=False)
 def Package(
-    additional_args: Annotated[Optional[list[str]], typer.Option("--arg", help="Additional arguments passed to the build command.")]=None,
-    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
-    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
+    additional_args: Annotated[
+        Optional[list[str]],
+        typer.Option("--arg", help="Additional arguments passed to the build command."),
+    ] = None,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="Write verbose information to the terminal.")
+    ] = False,
+    debug: Annotated[
+        bool, typer.Option("--debug", help="Write debug information to the terminal.")
+    ] = False,
 ) -> None:
     """Builds the python package."""
 
@@ -194,7 +283,9 @@ def Package(
     ) as dm:
         with dm.Nested("Packaging...") as package_dm:
             command_line = "python -m build{}".format(
-                "" if not additional_args else " {}".format(" ".join('"{}"'.format(arg) for arg in additional_args)),
+                ""
+                if not additional_args
+                else " {}".format(" ".join('"{}"'.format(arg) for arg in additional_args)),
             )
 
             package_dm.WriteVerbose("Command Line: {}\n\n".format(command_line))
@@ -208,10 +299,25 @@ def Package(
 # ----------------------------------------------------------------------
 @app.command("Publish", no_args_is_help=False)
 def Publish(
-    pypi_api_token: Annotated[str, typer.Argument(help="API token as generated on PyPi.org or test.PyPi.org; this token should be scoped to this project only.")],
-    production: Annotated[bool, typer.Option("--production", help="Push to the production version of PyPi (PyPi.org); the test PyPi server is used by default (test.PyPi.org).")]=False,
-    verbose: Annotated[bool, typer.Option("--verbose", help="Write verbose information to the terminal.")]=False,
-    debug: Annotated[bool, typer.Option("--debug", help="Write debug information to the terminal.")]=False,
+    pypi_api_token: Annotated[
+        str,
+        typer.Argument(
+            help="API token as generated on PyPi.org or test.PyPi.org; this token should be scoped to this project only."
+        ),
+    ],
+    production: Annotated[
+        bool,
+        typer.Option(
+            "--production",
+            help="Push to the production version of PyPi (PyPi.org); the test PyPi server is used by default (test.PyPi.org).",
+        ),
+    ] = False,
+    verbose: Annotated[
+        bool, typer.Option("--verbose", help="Write verbose information to the terminal.")
+    ] = False,
+    debug: Annotated[
+        bool, typer.Option("--debug", help="Write debug information to the terminal.")
+    ] = False,
 ) -> None:
     """Publishes the python package to PyPi."""
 

@@ -80,9 +80,10 @@ class TestCreateDecoratedText(object):
 
     # ----------------------------------------------------------------------
     def test_Multiline(self, test_data):
-        assert test_data[2](
-            textwrap.dedent(
-                """\
+        assert (
+            test_data[2](
+                textwrap.dedent(
+                    """\
 
                 Line1
                     Line2
@@ -90,9 +91,10 @@ class TestCreateDecoratedText(object):
                 Line3
 
                 """,
-            ),
-        ) == textwrap.dedent(
-            """\
+                ),
+            )
+            == textwrap.dedent(
+                """\
 
             \x1b[{color}m{prefix}:\x1b[0m Line1
             {whitespace}     Line2
@@ -100,17 +102,19 @@ class TestCreateDecoratedText(object):
             {whitespace} Line3
 
             """,
-        ).format(
-            color=test_data[1],
-            prefix=test_data[0],
-            whitespace=" " * (len(test_data[0]) + 1),
+            ).format(
+                color=test_data[1],
+                prefix=test_data[0],
+                whitespace=" " * (len(test_data[0]) + 1),
+            )
         )
 
     # ----------------------------------------------------------------------
     def test_MultilineDecorateAllLines(self, test_data):
-        assert test_data[2](
-            textwrap.dedent(
-                """\
+        assert (
+            test_data[2](
+                textwrap.dedent(
+                    """\
 
                 Line1
                     Line2
@@ -118,10 +122,11 @@ class TestCreateDecoratedText(object):
                 Line3
 
                 """,
-            ),
-            decorate_every_line=True,
-        ) == textwrap.dedent(
-            """\
+                ),
+                decorate_every_line=True,
+            )
+            == textwrap.dedent(
+                """\
 
             \x1b[{color}m{prefix}:\x1b[0m Line1
             \x1b[{color}m{prefix}:\x1b[0m     Line2
@@ -129,9 +134,10 @@ class TestCreateDecoratedText(object):
             \x1b[{color}m{prefix}:\x1b[0m Line3
 
             """,
-        ).format(
-            color=test_data[1],
-            prefix=test_data[0],
+            ).format(
+                color=test_data[1],
+                prefix=test_data[0],
+            )
         )
 
 
@@ -139,11 +145,16 @@ class TestCreateDecoratedText(object):
 class TestCreateStatusText(object):
     # ----------------------------------------------------------------------
     def test_Standard(self):
-        assert CreateStatusText(1, 2, 3) == "\x1b[32;1m1\x1b[0m succeeded, \x1b[31;1m2\x1b[0m failed, \x1b[33;1m3\x1b[0m warnings"
+        assert (
+            CreateStatusText(1, 2, 3)
+            == "\x1b[32;1m1\x1b[0m succeeded, \x1b[31;1m2\x1b[0m failed, \x1b[33;1m3\x1b[0m warnings"
+        )
 
     # ----------------------------------------------------------------------
     def test_StandardNoColor(self):
-        assert CreateStatusText(1, 2, 3, supports_colors=False) == "1 succeeded, 2 failed, 3 warnings"
+        assert (
+            CreateStatusText(1, 2, 3, supports_colors=False) == "1 succeeded, 2 failed, 3 warnings"
+        )
 
     # ----------------------------------------------------------------------
     def test_Zeroes(self):
@@ -151,58 +162,75 @@ class TestCreateStatusText(object):
 
     # ----------------------------------------------------------------------
     def test_NoSucceeded(self):
-        assert CreateStatusText(None, 2, 3) == "\x1b[31;1m2\x1b[0m failed, \x1b[33;1m3\x1b[0m warnings"
+        assert (
+            CreateStatusText(None, 2, 3) == "\x1b[31;1m2\x1b[0m failed, \x1b[33;1m3\x1b[0m warnings"
+        )
 
     # ----------------------------------------------------------------------
     def test_NoFailed(self):
-        assert CreateStatusText(1, None, 3) == "\x1b[32;1m1\x1b[0m succeeded, \x1b[33;1m3\x1b[0m warnings"
+        assert (
+            CreateStatusText(1, None, 3)
+            == "\x1b[32;1m1\x1b[0m succeeded, \x1b[33;1m3\x1b[0m warnings"
+        )
 
     # ----------------------------------------------------------------------
     def test_NoWarnings(self):
-        assert CreateStatusText(1, 2, None) == "\x1b[32;1m1\x1b[0m succeeded, \x1b[31;1m2\x1b[0m failed"
+        assert (
+            CreateStatusText(1, 2, None)
+            == "\x1b[32;1m1\x1b[0m succeeded, \x1b[31;1m2\x1b[0m failed"
+        )
 
 
 # ----------------------------------------------------------------------
 class TestIndent(object):
     # ----------------------------------------------------------------------
     def test_WhitespacePrefix(self):
-        assert Indent(
-            textwrap.dedent(
-                """\
+        assert (
+            Indent(
+                textwrap.dedent(
+                    """\
                 Line1
 
                 Line3
                 """,
-            ),
-            5,
-        ) == "     Line1\n\n     Line3\n"
+                ),
+                5,
+            )
+            == "     Line1\n\n     Line3\n"
+        )
 
     # ----------------------------------------------------------------------
     def test_StringPrefix(self):
-        assert Indent(
-            textwrap.dedent(
-                """\
+        assert (
+            Indent(
+                textwrap.dedent(
+                    """\
                 Line1
 
                 Line3
                 """,
-            ),
-            "***",
-        ) == "***Line1\n\n***Line3\n"
+                ),
+                "***",
+            )
+            == "***Line1\n\n***Line3\n"
+        )
 
     # ----------------------------------------------------------------------
     def test_SkipFirstLine(self):
-        assert Indent(
-            textwrap.dedent(
-                """\
+        assert (
+            Indent(
+                textwrap.dedent(
+                    """\
                 Line1
 
                 Line3
                 """,
-            ),
-            "***",
-            skip_first_line=True,
-        ) == "Line1\n\n***Line3\n"
+                ),
+                "***",
+                skip_first_line=True,
+            )
+            == "Line1\n\n***Line3\n"
+        )
 
 
 # ----------------------------------------------------------------------
@@ -225,6 +253,10 @@ def test_BoundedLJust():
         "01234...HIJKL",
     ]
 
+
 # ----------------------------------------------------------------------
 def test_CreateAnsiHyperlink():
-    assert CreateAnsiHyperLink("https://test.com", "Test Link") == "\x1b]8;;https://test.com\x1b\\Test Link\x1b]8;;\x1b\\"
+    assert (
+        CreateAnsiHyperLink("https://test.com", "Test Link")
+        == "\x1b]8;;https://test.com\x1b\\Test Link\x1b]8;;\x1b\\"
+    )

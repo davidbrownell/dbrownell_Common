@@ -35,7 +35,7 @@ from dbrownell_Common.Streams.StreamDecorator import StreamDecorator, TextWriter
 
 
 # ----------------------------------------------------------------------
-DISPLAYED_EXCEPTION_ATTRIBUTE_NAME: str     = "_done_manager_displayed_exception___"
+DISPLAYED_EXCEPTION_ATTRIBUTE_NAME: str = "_done_manager_displayed_exception___"
 
 
 # ----------------------------------------------------------------------
@@ -65,8 +65,10 @@ try:
     if "typer" in sys.modules:
         typer = sys.modules["typer"]
 
-        _original_exception_hook = typer.main._original_except_hook     # pylint: disable=protected-access
-        typer.main._original_except_hook = _ExceptionHook               # pylint: disable=protected-access
+        _original_exception_hook = (
+            typer.main._original_except_hook
+        )  # pylint: disable=protected-access
+        typer.main._original_except_hook = _ExceptionHook  # pylint: disable=protected-access
     else:
         _original_exception_hook = sys.excepthook
         sys.excepthook = _ExceptionHook
@@ -100,9 +102,11 @@ except ImportError:
             self,
             result: int,
         ):
-            self.result                     = result
+            self.result = result
 
-            super(ExitException, self).__init__("The process is returning with a result of '{}'.".format(result))
+            super(ExitException, self).__init__(
+                "The process is returning with a result of '{}'.".format(result)
+            )
 
     # ----------------------------------------------------------------------
     def ExitNoTyper(
@@ -152,6 +156,7 @@ except ImportError:
 # ----------------------------------------------------------------------
 class DoneManagerException(Exception):
     """Exception whose call stack is not displayed when caught within an active DoneManager."""
+
     pass  # pylint: disable=unnecessary-pass
 
 
@@ -159,21 +164,21 @@ class DoneManagerException(Exception):
 class Flags(Flag):
     """Flags used to filter the output for a DoneManager"""
 
-    VerboseFlag                             = auto()
-    DebugFlag                               = auto()
+    VerboseFlag = auto()
+    DebugFlag = auto()
 
     # Amalgamations
-    Standard                                = 0
-    Verbose                                 = VerboseFlag
-    Debug                                   = VerboseFlag | DebugFlag
+    Standard = 0
+    Verbose = VerboseFlag
+    Debug = VerboseFlag | DebugFlag
 
     # ----------------------------------------------------------------------
     @classmethod
     def Create(
         cls,
         *,
-        verbose: bool=False,
-        debug: bool=False,
+        verbose: bool = False,
+        debug: bool = False,
     ) -> "Flags":
         if debug:
             flag = cls.Debug
@@ -196,25 +201,33 @@ class Args(object):
     # |
     # ----------------------------------------------------------------------
     heading_param: InitVar[str]
-    heading: str                                        = field(init=False)
+    heading: str = field(init=False)
 
-    done_suffix_or_suffixes: InitVar[None | Callable[[], Optional[str]] | list[Callable[[], Optional[str]]]]    = None
-    done_suffixes: list[Callable[[], Optional[str]]]    = field(init=False)
+    done_suffix_or_suffixes: InitVar[
+        None | Callable[[], Optional[str]] | list[Callable[[], Optional[str]]]
+    ] = None
+    done_suffixes: list[Callable[[], Optional[str]]] = field(init=False)
 
-    prefix: None | str | Callable[[], Optional[str]]    = field(kw_only=True, default=None)
-    suffix: None | str | Callable[[], Optional[str]]    = field(kw_only=True, default=None)
+    prefix: None | str | Callable[[], Optional[str]] = field(kw_only=True, default=None)
+    suffix: None | str | Callable[[], Optional[str]] = field(kw_only=True, default=None)
 
-    line_prefix: Optional[StreamDecorator.PrefixOrSuffixT]  = field(kw_only=True, default="  ")
+    line_prefix: Optional[StreamDecorator.PrefixOrSuffixT] = field(kw_only=True, default="  ")
 
-    display: bool                                       = field(kw_only=True, default=True)     # Display done information
-    display_result: bool                                = field(kw_only=True, default=True)     # Display the result
-    display_time: bool                                  = field(kw_only=True, default=True)     # Display the time delta
+    display: bool = field(kw_only=True, default=True)  # Display done information
+    display_result: bool = field(kw_only=True, default=True)  # Display the result
+    display_time: bool = field(kw_only=True, default=True)  # Display the time delta
 
-    display_exceptions: bool                            = field(kw_only=True, default=True)     # Display exceptions when they are encountered; exceptions will percolate if not displayed.
-    display_exception_details: bool                     = field(kw_only=True, default=False)    # Do not display exception details (such as the call stack)
-    suppress_exceptions: bool                           = field(kw_only=False, default=False)   # Do not let exceptions propagate
+    display_exceptions: bool = field(
+        kw_only=True, default=True
+    )  # Display exceptions when they are encountered; exceptions will percolate if not displayed.
+    display_exception_details: bool = field(
+        kw_only=True, default=False
+    )  # Do not display exception details (such as the call stack)
+    suppress_exceptions: bool = field(
+        kw_only=False, default=False
+    )  # Do not let exceptions propagate
 
-    preserve_status: bool                               = field(kw_only=True, default=True)
+    preserve_status: bool = field(kw_only=True, default=True)
 
     # ----------------------------------------------------------------------
     # |
@@ -224,14 +237,18 @@ class Args(object):
     def __post_init__(
         self,
         heading_param: str,
-        done_suffix_or_suffixes: None | Callable[[], Optional[str]] | list[Callable[[], Optional[str]]],
+        done_suffix_or_suffixes: None
+        | Callable[[], Optional[str]]
+        | list[Callable[[], Optional[str]]],
     ) -> None:
         if done_suffix_or_suffixes is None:
             suffixes = []
         elif isinstance(done_suffix_or_suffixes, list):
             suffixes = done_suffix_or_suffixes
         else:
-            suffixes = [done_suffix_or_suffixes, ]
+            suffixes = [
+                done_suffix_or_suffixes,
+            ]
 
         object.__setattr__(self, "done_suffixes", suffixes)
 
@@ -255,8 +272,8 @@ class TopLevelArgs(Args):
     """Arguments when creating top-level/non-nested DoneManager instances"""
 
     # ----------------------------------------------------------------------
-    flags: Flags                            = field(kw_only=True, default=Flags.Standard)
-    num_cols: int                           = field(kw_only=True, default=Capabilities.DEFAULT_COLUMNS)
+    flags: Flags = field(kw_only=True, default=Flags.Standard)
+    num_cols: int = field(kw_only=True, default=Capabilities.DEFAULT_COLUMNS)
 
 
 # ----------------------------------------------------------------------
@@ -265,23 +282,23 @@ class DoneManager(object):
     """Object that helps when writing nested output."""
 
     # ----------------------------------------------------------------------
-    result: int                             = field(init=False, default=0)
+    result: int = field(init=False, default=0)
 
     _stream: StreamDecorator
 
-    flags: Flags                            = field(kw_only=True)
-    heading: str                            = field(kw_only=True)
-    preserve_status: bool                   = field(kw_only=True)
+    flags: Flags = field(kw_only=True)
+    heading: str = field(kw_only=True)
+    preserve_status: bool = field(kw_only=True)
 
-    num_cols: int                           = field(kw_only=True)
+    num_cols: int = field(kw_only=True)
 
-    _line_prefix: str                       = field(init=False)
-    _status_line_prefix: str                = field(init=False)
-    _num_status_cols: int                   = field(init=False)
+    _line_prefix: str = field(init=False)
+    _status_line_prefix: str = field(init=False)
+    _num_status_cols: int = field(init=False)
 
-    _wrote_content: bool                    = field(init=False, default=False)
-    _wrote_status: bool                     = field(init=False, default=False)
-    _prev_status_content: list[str]         = field(init=False, default_factory=list)
+    _wrote_content: bool = field(init=False, default=False)
+    _wrote_status: bool = field(init=False, default=False)
+    _prev_status_content: list[str] = field(init=False, default_factory=list)
 
     # ----------------------------------------------------------------------
     @classmethod
@@ -289,8 +306,8 @@ class DoneManager(object):
     def Create(
         cls,
         stream: TextWriterT,
-        *top_level_args,                    # See `TopLevelArgs`
-        **top_level_kwargs,                 # See `TopLevelArgs`
+        *top_level_args,  # See `TopLevelArgs`
+        **top_level_kwargs,  # See `TopLevelArgs`
     ) -> Iterator["DoneManager"]:
         args = TopLevelArgs(*top_level_args, **top_level_kwargs)
 
@@ -310,10 +327,10 @@ class DoneManager(object):
     @contextmanager
     def CreateCommandLine(
         cls,
-        stream: TextWriterT=sys.stdout,
+        stream: TextWriterT = sys.stdout,
         *,
-        flags: Flags=Flags.Standard,
-        display: bool=True,
+        flags: Flags = Flags.Standard,
+        display: bool = True,
         **kwargs,
     ) -> Iterator["DoneManager"]:
         """Creates a DoneManager instance suitable for use with command-line functionality."""
@@ -390,8 +407,8 @@ class DoneManager(object):
         def CreateStandardText(
             value: str,
             *,
-            supports_colors: bool=True,                 # pylint: disable=unused-argument
-            decorate_every_line: bool=False,            # pylint: disable=unused-argument
+            supports_colors: bool = True,  # pylint: disable=unused-argument
+            decorate_every_line: bool = False,  # pylint: disable=unused-argument
         ) -> str:
             return value
 
@@ -413,7 +430,7 @@ class DoneManager(object):
         self,
         content: str,
         *,
-        update_result: bool=True,
+        update_result: bool = True,
     ) -> None:
         """Writes a line decorated with an error prefix; status information is preserved or cleared based on the `preserve_status` flag."""
 
@@ -427,7 +444,7 @@ class DoneManager(object):
         self,
         content: str,
         *,
-        update_result: bool=True,
+        update_result: bool = True,
     ) -> None:
         """Writes a line decorated with a warning prefix; status information is preserved or cleared based on the `preserve_status` flag."""
 
@@ -512,8 +529,8 @@ class DoneManager(object):
     @contextmanager
     def Nested(
         self,
-        *args,                              # See `Args`
-        **kwargs,                           # See `Args`
+        *args,  # See `Args`
+        **kwargs,  # See `Args`
     ) -> Iterator["DoneManager"]:
         """Creates a nested DoneManager"""
 
@@ -525,8 +542,8 @@ class DoneManager(object):
     @contextmanager
     def VerboseNested(
         self,
-        *args,                              # See `Args`
-        **kwargs,                           # See `Args`
+        *args,  # See `Args`
+        **kwargs,  # See `Args`
     ) -> Iterator["DoneManager"]:
         """Creates a nested DoneManager if the verbose flag is set"""
 
@@ -538,8 +555,8 @@ class DoneManager(object):
     @contextmanager
     def DebugNested(
         self,
-        *args,                              # See `Args`
-        **kwargs,                           # See `Args`
+        *args,  # See `Args`
+        **kwargs,  # See `Args`
     ) -> Iterator["DoneManager"]:
         """Creates a nested DoneManager if the debug flag is set"""
 
@@ -578,7 +595,9 @@ class DoneManager(object):
         if self.is_verbose:
             stream = StreamDecorator(
                 self._stream,
-                line_prefix=TextwrapEx.CreateVerbosePrefix(Capabilities.Get(self._stream).supports_colors),
+                line_prefix=TextwrapEx.CreateVerbosePrefix(
+                    Capabilities.Get(self._stream).supports_colors
+                ),
                 decorate_empty_lines=True,
             )
         else:
@@ -608,7 +627,9 @@ class DoneManager(object):
         if self.is_debug:
             stream = StreamDecorator(
                 self._stream,
-                line_prefix=TextwrapEx.CreateDebugPrefix(Capabilities.Get(self._stream).supports_colors),
+                line_prefix=TextwrapEx.CreateDebugPrefix(
+                    Capabilities.Get(self._stream).supports_colors
+                ),
                 decorate_empty_lines=True,
             )
         else:
@@ -661,11 +682,7 @@ class DoneManager(object):
 
                         sys.stdout.write(self._line_prefix)
 
-                    elif (
-                        is_interactive
-                        and not context.persist_content
-                        and not self._wrote_content
-                    ):
+                    elif is_interactive and not context.persist_content and not self._wrote_content:
                         # Move up a line, write the whitespace and heading
                         sys.stdout.write(
                             "\033[1A{}{}".format(self._line_prefix, self.heading),
@@ -675,7 +692,9 @@ class DoneManager(object):
     # ----------------------------------------------------------------------
     def __post_init__(self):
         self._line_prefix = self._stream.GetCompleteLinePrefix(include_self=False)
-        self._status_line_prefix = self._line_prefix + self._stream.GetLinePrefix(len(self._line_prefix))
+        self._status_line_prefix = self._line_prefix + self._stream.GetLinePrefix(
+            len(self._line_prefix)
+        )
 
         complete_line_prefix = self._stream.GetCompleteLinePrefix(include_self=True)
         len_complete_line_prefix = len(complete_line_prefix)
@@ -693,8 +712,8 @@ class DoneManager(object):
             self,
             value: str,
             *,
-            supports_colors: bool=True,
-            decorate_every_line: bool=False,
+            supports_colors: bool = True,
+            decorate_every_line: bool = False,
         ) -> str:
             ...  # pragma: no cover
 
@@ -839,12 +858,8 @@ class DoneManager(object):
                 ):
                     object.__setattr__(ex, DISPLAYED_EXCEPTION_ATTRIBUTE_NAME, True)
 
-                    if (
-                        not isinstance(ex, DoneManagerException)
-                        and (
-                            flags & Flags.Debug
-                            or args.display_exception_details
-                        )
+                    if not isinstance(ex, DoneManagerException) and (
+                        flags & Flags.Debug or args.display_exception_details
                     ):
                         exception_content = traceback.format_exc()
                     else:
@@ -892,10 +907,7 @@ class DoneManager(object):
             try:
                 yield dm
             finally:
-                if (
-                    (dm.result < 0 and self.result >= 0)
-                    or (dm.result > 0 and self.result == 0)
-                ):
+                if (dm.result < 0 and self.result >= 0) or (dm.result > 0 and self.result == 0):
                     self.result = dm.result
 
     # ----------------------------------------------------------------------
@@ -926,7 +938,7 @@ class DoneManager(object):
         self,
         content: str | list[str],
         *,
-        update_prev_status: bool=True,
+        update_prev_status: bool = True,
     ) -> None:
         if not self.capabilities.is_interactive:
             return
@@ -953,7 +965,9 @@ class DoneManager(object):
                 lines.append("\r{}\n".format(line))
 
             if len(self._prev_status_content) > len(lines):
-                blank_lines += ["\r{}\n".format("".ljust(self._num_status_cols)), ] * (len(self._prev_status_content) - len(lines))
+                blank_lines += [
+                    "\r{}\n".format("".ljust(self._num_status_cols)),
+                ] * (len(self._prev_status_content) - len(lines))
 
         # Write the content
         for line in itertools.chain(lines, blank_lines):
@@ -974,11 +988,7 @@ class DoneManager(object):
         else:
             self.ClearStatus()
 
-            if (
-                self.capabilities.is_interactive
-                and not self._wrote_content
-                and self._wrote_status
-            ):
+            if self.capabilities.is_interactive and not self._wrote_content and self._wrote_status:
                 # Move up a line and recreate the heading
                 self._stream.write("\033[1A\r{}{}".format(self._line_prefix, self.heading))
                 self._stream.flush()

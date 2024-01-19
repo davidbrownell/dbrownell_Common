@@ -35,11 +35,11 @@ class FakeStream(TextWriter):
     def __init__(
         self,
         fileno: int,
-        isatty: bool=False,
+        isatty: bool = False,
     ):
-        self.content: list[Optional[str]]   = []
-        self._fileno                        = fileno
-        self._isatty                        = isatty
+        self.content: list[Optional[str]] = []
+        self._fileno = fileno
+        self._isatty = isatty
 
     # ----------------------------------------------------------------------
     def isatty(self) -> bool:
@@ -112,7 +112,9 @@ def test_SingleSimpleStream():
     assert stream.fileno() == fake.fileno()
     assert fake.content == []
 
-    assert list(stream.EnumStreams()) == [fake, ]
+    assert list(stream.EnumStreams()) == [
+        fake,
+    ]
     assert stream.GetLinePrefix(0) == ""
     assert stream.GetCompleteLinePrefix() == ""
 
@@ -120,7 +122,9 @@ def test_SingleSimpleStream():
     stream.write("test")
     assert stream.col_offset == len("test")
     assert stream.wrote_content is True
-    assert fake.content == ["test", ]
+    assert fake.content == [
+        "test",
+    ]
 
     # "\n"
     stream.write("\n")
@@ -132,7 +136,11 @@ def test_SingleSimpleStream():
     stream.write("test2")
     assert stream.col_offset == len("test2")
     assert stream.wrote_content is True
-    assert fake.content == ["test", "\n", "test2", ]
+    assert fake.content == [
+        "test",
+        "\n",
+        "test2",
+    ]
 
     # flush
     stream.flush()
@@ -178,10 +186,27 @@ def test_SingleStreamWithLinePrefixAndSuffix():
     stream.flush()
     assert stream.col_offset == len("__prefix__more")
     assert stream.wrote_content is True
-    assert fake.content == ["__prefix__", "Hello world!", "__suffix__", "\n", "__prefix__", "more", None]
+    assert fake.content == [
+        "__prefix__",
+        "Hello world!",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "more",
+        None,
+    ]
 
     stream.close()
-    assert fake.content == ["__prefix__", "Hello world!", "__suffix__", "\n", "__prefix__", "more", None, None]
+    assert fake.content == [
+        "__prefix__",
+        "Hello world!",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "more",
+        None,
+        None,
+    ]
 
 
 # ----------------------------------------------------------------------
@@ -224,26 +249,48 @@ def test_SingleComplicatedStream():
     assert stream.col_offset == 0
     assert fake.content == [
         "STREAM\nHEADER\n",
-        "__prefix__", "Hello world!", "__suffix__", "\n",
-        "__prefix__", "With Newline", "__suffix__", "\n",
+        "__prefix__",
+        "Hello world!",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "With Newline",
+        "__suffix__",
+        "\n",
     ]
 
     stream.write("no newline before suffix")
     assert stream.col_offset == len("__prefix__no newline before suffix")
     assert fake.content == [
         "STREAM\nHEADER\n",
-        "__prefix__", "Hello world!", "__suffix__", "\n",
-        "__prefix__", "With Newline", "__suffix__", "\n",
-        "__prefix__", "no newline before suffix",
+        "__prefix__",
+        "Hello world!",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "With Newline",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "no newline before suffix",
     ]
 
     stream.close()
     assert stream.col_offset == 0
     assert fake.content == [
         "STREAM\nHEADER\n",
-        "__prefix__", "Hello world!", "__suffix__", "\n",
-        "__prefix__", "With Newline", "__suffix__", "\n",
-        "__prefix__", "no newline before suffix", "STREAM\nFOOTER\n", None
+        "__prefix__",
+        "Hello world!",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "With Newline",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "no newline before suffix",
+        "STREAM\nFOOTER\n",
+        None,
     ]
 
 
@@ -281,7 +328,12 @@ def test_MultipleStreams():
 # ----------------------------------------------------------------------
 def test_GetLinePrefix():
     assert StreamDecorator(FakeStream(123)).GetLinePrefix(0) == ""
-    assert StreamDecorator(FakeStream(123), line_prefix=lambda x: "__prefix__({})".format(x)).GetLinePrefix(0) == "__prefix__(0)"
+    assert (
+        StreamDecorator(
+            FakeStream(123), line_prefix=lambda x: "__prefix__({})".format(x)
+        ).GetLinePrefix(0)
+        == "__prefix__(0)"
+    )
 
 
 # ----------------------------------------------------------------------
@@ -297,9 +349,15 @@ def test_DecorateEmptyLines():
     stream.write("Hello\n\nWorld\n")
     assert stream.col_offset == 0
     assert fake.content == [
-        "__prefix__", "Hello", "__suffix__", "\n",
+        "__prefix__",
+        "Hello",
+        "__suffix__",
         "\n",
-        "__prefix__", "World", "__suffix__", "\n",
+        "\n",
+        "__prefix__",
+        "World",
+        "__suffix__",
+        "\n",
     ]
 
     fake = FakeStream(123)
@@ -314,9 +372,17 @@ def test_DecorateEmptyLines():
     stream.write("Hello\n\nWorld\n")
     assert stream.col_offset == 0
     assert fake.content == [
-        "__prefix__", "Hello", "__suffix__", "\n",
-        "__prefix__", "__suffix__", "\n",
-        "__prefix__", "World", "__suffix__", "\n",
+        "__prefix__",
+        "Hello",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "__suffix__",
+        "\n",
+        "__prefix__",
+        "World",
+        "__suffix__",
+        "\n",
     ]
 
 

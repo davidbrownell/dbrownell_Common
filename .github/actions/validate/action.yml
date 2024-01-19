@@ -50,17 +50,23 @@ runs:
   steps:
     - name: Bootstrap
       shell: ${{ inputs.shell_name }}
-      run: |-
+      run: |
         ${{ inputs.script_prefix }}Bootstrap${{ inputs.script_extension }} --python-version ${{ inputs.python_version }}
+
+    - name: Black
+      shell: ${{ inputs.shell_name }}
+      run: |
+        ${{ inputs.source_command }} ${{ inputs.script_prefix }}Activate${{ inputs.script_extension }}
+        python Build.py Black
 
     - name: Pylint
       shell: ${{ inputs.shell_name }}
-      run: |-
+      run: |
         ${{ inputs.source_command }} ${{ inputs.script_prefix }}Activate${{ inputs.script_extension }}
         python Build.py Pylint
 
     - name: Test
       shell: ${{ inputs.shell_name }}
-      run: |-
+      run: |
         ${{ inputs.source_command }} ${{ inputs.script_prefix }}Activate${{ inputs.script_extension }}
         python Build.py Test
