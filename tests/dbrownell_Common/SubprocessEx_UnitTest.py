@@ -39,7 +39,6 @@ class TestRun(object):
         except Exception:
             assert False, "An exception should not have been raised"
 
-
     # ----------------------------------------------------------------------
     def test_Error(self):
         result = Run("this_command_does_not_exist")
@@ -147,7 +146,11 @@ class TestStream(object):
     def test_LineDelimitedPartialContent(self):
         mock = Mock()
 
-        result = Stream('''python -c "import sys; sys.stdout.write('Hello\\nWorld')"''', mock, line_delimited_output=True)
+        result = Stream(
+            '''python -c "import sys; sys.stdout.write('Hello\\nWorld')"''',
+            mock,
+            line_delimited_output=True,
+        )
 
         assert result == 0
 

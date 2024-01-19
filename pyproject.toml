@@ -18,6 +18,11 @@
 requires = ["setuptools >= 63.0"]
 build-backend = "setuptools.build_meta"
 
+# ----------------------------------------------------------------------
+# |
+# |  Project
+# |
+# ----------------------------------------------------------------------
 [project]
 name = "dbrownell_Common"
 description = "Common python code used across a variety of different projects."
@@ -62,11 +67,10 @@ dynamic = [
     "version",
 ]
 
-[tool.setuptools.dynamic]
-version = { attr = "dbrownell_Common.__version__" }
 
 [project.optional-dependencies]
 dev = [
+    "black == 23.*",
     "coverage == 7.*",
     "pylint == 3.*",
     "pytest == 7.*",
@@ -84,6 +88,13 @@ Homepage = "https://github.com/davidbrownell/dbrownell_Common"
 Documentation = "https://github.com/davidbrownell/dbrownell_Common"
 Repository = "https://github.com/davidbrownell/dbrownell_Common"
 
+# ----------------------------------------------------------------------
+# |
+# |  Black
+# |
+# ----------------------------------------------------------------------
+[tool.black]
+line-length = 100
 
 # ----------------------------------------------------------------------
 # |
@@ -168,3 +179,11 @@ reportMissingTypeStubs = false
 python_files = [
     "**/*Test.py",
 ]
+
+# ----------------------------------------------------------------------
+# |
+# |  Setuptools
+# |
+# ----------------------------------------------------------------------
+[tool.setuptools.dynamic]
+version = { attr = "dbrownell_Common.__version__" }

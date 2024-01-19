@@ -28,35 +28,30 @@ from typing import Callable, Optional
 # ----------------------------------------------------------------------
 # Normally, I'd use colorama for these values, but this package cannot have any
 # external dependencies.
-BRIGHT_RED_COLOR_ON                         = "\033[31;1m"  # Red / Bright
-BRIGHT_GREEN_COLOR_ON                       = "\033[32;1m"  # Green / Bright
-BRIGHT_YELLOW_COLOR_ON                      = "\033[33;1m"  # Yellow / Bright
+BRIGHT_RED_COLOR_ON = "\033[31;1m"  # Red / Bright
+BRIGHT_GREEN_COLOR_ON = "\033[32;1m"  # Green / Bright
+BRIGHT_YELLOW_COLOR_ON = "\033[33;1m"  # Yellow / Bright
 
-BRIGHT_WHITE_COLOR_ON                       = "\033[37;1m"  # White / Bright
-DIM_WHITE_COLOR_ON                          = "\033[;7m"    # Inverse video
-
-# ----------------------------------------------------------------------
-ERROR_COLOR_ON                              = BRIGHT_RED_COLOR_ON
-INFO_COLOR_ON                               = DIM_WHITE_COLOR_ON
-SUCCESS_COLOR_ON                            = BRIGHT_GREEN_COLOR_ON
-WARNING_COLOR_ON                            = BRIGHT_YELLOW_COLOR_ON
-VERBOSE_COLOR_ON                            = DIM_WHITE_COLOR_ON
-DEBUG_COLOR_ON                              = BRIGHT_WHITE_COLOR_ON
+BRIGHT_WHITE_COLOR_ON = "\033[37;1m"  # White / Bright
+DIM_WHITE_COLOR_ON = "\033[;7m"  # Inverse video
 
 # ----------------------------------------------------------------------
-COLOR_OFF                                   = "\033[0m" # Reset
+ERROR_COLOR_ON = BRIGHT_RED_COLOR_ON
+INFO_COLOR_ON = DIM_WHITE_COLOR_ON
+SUCCESS_COLOR_ON = BRIGHT_GREEN_COLOR_ON
+WARNING_COLOR_ON = BRIGHT_YELLOW_COLOR_ON
+VERBOSE_COLOR_ON = DIM_WHITE_COLOR_ON
+DEBUG_COLOR_ON = BRIGHT_WHITE_COLOR_ON
+
+# ----------------------------------------------------------------------
+COLOR_OFF = "\033[0m"  # Reset
 
 
 # ----------------------------------------------------------------------
 def _CreateCustomPrefixFunc(
     header: str,
     color_value: str,
-) -> Callable[
-    [
-        bool,                               # supports_colors
-    ],
-    str
-]:
+) -> Callable[[bool,], str]:  # supports_colors
     # ----------------------------------------------------------------------
     def Impl(
         supports_colors: bool,
@@ -76,12 +71,12 @@ def _CreateCustomPrefixFunc(
 
 
 # ----------------------------------------------------------------------
-CreateErrorPrefix                           = _CreateCustomPrefixFunc("ERROR", ERROR_COLOR_ON)
-CreateWarningPrefix                         = _CreateCustomPrefixFunc("WARNING", WARNING_COLOR_ON)
-CreateInfoPrefix                            = _CreateCustomPrefixFunc("INFO", INFO_COLOR_ON)
-CreateSuccessPrefix                         = _CreateCustomPrefixFunc("SUCCESS", SUCCESS_COLOR_ON)
-CreateVerbosePrefix                         = _CreateCustomPrefixFunc("VERBOSE", VERBOSE_COLOR_ON)
-CreateDebugPrefix                           = _CreateCustomPrefixFunc("DEBUG", DEBUG_COLOR_ON)
+CreateErrorPrefix = _CreateCustomPrefixFunc("ERROR", ERROR_COLOR_ON)
+CreateWarningPrefix = _CreateCustomPrefixFunc("WARNING", WARNING_COLOR_ON)
+CreateInfoPrefix = _CreateCustomPrefixFunc("INFO", INFO_COLOR_ON)
+CreateSuccessPrefix = _CreateCustomPrefixFunc("SUCCESS", SUCCESS_COLOR_ON)
+CreateVerbosePrefix = _CreateCustomPrefixFunc("VERBOSE", VERBOSE_COLOR_ON)
+CreateDebugPrefix = _CreateCustomPrefixFunc("DEBUG", DEBUG_COLOR_ON)
 
 del _CreateCustomPrefixFunc
 
@@ -90,60 +85,90 @@ del _CreateCustomPrefixFunc
 def CreateErrorText(
     value: str,
     *,
-    supports_colors: bool=True,
-    decorate_every_line: bool=False,
+    supports_colors: bool = True,
+    decorate_every_line: bool = False,
 ) -> str:
-    return _CreateText(CreateErrorPrefix, value, supports_colors=supports_colors, decorate_every_line=decorate_every_line)
+    return _CreateText(
+        CreateErrorPrefix,
+        value,
+        supports_colors=supports_colors,
+        decorate_every_line=decorate_every_line,
+    )
 
 
 # ----------------------------------------------------------------------
 def CreateWarningText(
     value: str,
     *,
-    supports_colors: bool=True,
-    decorate_every_line: bool=False,
+    supports_colors: bool = True,
+    decorate_every_line: bool = False,
 ) -> str:
-    return _CreateText(CreateWarningPrefix, value, supports_colors=supports_colors, decorate_every_line=decorate_every_line)
+    return _CreateText(
+        CreateWarningPrefix,
+        value,
+        supports_colors=supports_colors,
+        decorate_every_line=decorate_every_line,
+    )
 
 
 # ----------------------------------------------------------------------
 def CreateInfoText(
     value: str,
     *,
-    supports_colors: bool=True,
-    decorate_every_line: bool=False,
+    supports_colors: bool = True,
+    decorate_every_line: bool = False,
 ) -> str:
-    return _CreateText(CreateInfoPrefix, value, supports_colors=supports_colors, decorate_every_line=decorate_every_line)
+    return _CreateText(
+        CreateInfoPrefix,
+        value,
+        supports_colors=supports_colors,
+        decorate_every_line=decorate_every_line,
+    )
 
 
 # ----------------------------------------------------------------------
 def CreateSuccessText(
     value: str,
     *,
-    supports_colors: bool=True,
-    decorate_every_line: bool=False,
+    supports_colors: bool = True,
+    decorate_every_line: bool = False,
 ) -> str:
-    return _CreateText(CreateSuccessPrefix, value, supports_colors=supports_colors, decorate_every_line=decorate_every_line)
+    return _CreateText(
+        CreateSuccessPrefix,
+        value,
+        supports_colors=supports_colors,
+        decorate_every_line=decorate_every_line,
+    )
 
 
 # ----------------------------------------------------------------------
 def CreateVerboseText(
     value: str,
     *,
-    supports_colors: bool=True,
-    decorate_every_line: bool=False,
+    supports_colors: bool = True,
+    decorate_every_line: bool = False,
 ) -> str:
-    return _CreateText(CreateVerbosePrefix, value, supports_colors=supports_colors, decorate_every_line=decorate_every_line)
+    return _CreateText(
+        CreateVerbosePrefix,
+        value,
+        supports_colors=supports_colors,
+        decorate_every_line=decorate_every_line,
+    )
 
 
 # ----------------------------------------------------------------------
 def CreateDebugText(
     value: str,
     *,
-    supports_colors: bool=True,
-    decorate_every_line: bool=False,
+    supports_colors: bool = True,
+    decorate_every_line: bool = False,
 ) -> str:
-    return _CreateText(CreateDebugPrefix, value, supports_colors=supports_colors, decorate_every_line=decorate_every_line)
+    return _CreateText(
+        CreateDebugPrefix,
+        value,
+        supports_colors=supports_colors,
+        decorate_every_line=decorate_every_line,
+    )
 
 
 # ----------------------------------------------------------------------
@@ -152,7 +177,7 @@ def CreateStatusText(
     failed: Optional[int],
     warnings: Optional[int],
     *,
-    supports_colors: bool=True,
+    supports_colors: bool = True,
 ) -> str:
     """Returns text that contains information for the number of succeeded, failed, and warning items which is useful when displaying status information."""
 
@@ -203,7 +228,7 @@ def Indent(
     value: str,
     indentation: str | int,
     *,
-    skip_first_line: bool=False,
+    skip_first_line: bool = False,
 ) -> str:
     """Ensures that each line in the provided value contains  the specified indentation."""
 
@@ -265,8 +290,8 @@ def BoundedLJust(
             midpoint -= 1
 
         value = "{}...{}".format(
-            value[:(midpoint - math.floor(chars_to_trim))],
-            value[(midpoint + math.ceil(chars_to_trim)):],
+            value[: (midpoint - math.floor(chars_to_trim))],
+            value[(midpoint + math.ceil(chars_to_trim)) :],
         )
 
     return value
@@ -286,9 +311,9 @@ def CreateAnsiHyperLink(
 def _CreateText(
     create_prefix_func: Callable[
         [
-            bool,                           # supports_colors
+            bool,  # supports_colors
         ],
-        str
+        str,
     ],
     value: str,
     *,

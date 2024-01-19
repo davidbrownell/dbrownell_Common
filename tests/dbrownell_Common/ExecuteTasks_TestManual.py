@@ -167,7 +167,9 @@ def test_YieldQueueExecutor():
     num_tasks = int(multiprocessing.cpu_count() * 1.5)
     num_steps = 20
 
-    results: list[Optional[int]] = [None, ] * num_tasks
+    results: list[Optional[int]] = [
+        None,
+    ] * num_tasks
 
     with DoneManager.Create(sys.stdout, "Executing tasks...") as dm:
         with YieldQueueExecutor(dm, "Queue") as executor:
@@ -207,12 +209,12 @@ def test_YieldQueueExecutor():
 def _ExecuteTasks(
     dm: DoneManager,
     execute_func: Callable[
-        [int, Status],                      # context
-        tuple[int, int],                    # updated context, return code
+        [int, Status],  # context
+        tuple[int, int],  # updated context, return code
     ],
     *,
-    num_tasks: int=5,
-    num_steps: Optional[int]=None,
+    num_tasks: int = 5,
+    num_steps: Optional[int] = None,
     **execute_tasks_kwargs: Any,
 ) -> list[int]:
     task_data = [
@@ -224,12 +226,16 @@ def _ExecuteTasks(
         for value in range(num_tasks)
     ]
 
-    results = [None, ] * len(task_data)
+    results = [
+        None,
+    ] * len(task_data)
 
     # ----------------------------------------------------------------------
     def Init(context: Any) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
         # ----------------------------------------------------------------------
-        def Prepare(on_simple_status_func: Callable[[str], None]) -> ExecuteTasksTypes.ExecuteFuncType | tuple[int, ExecuteTasksTypes.ExecuteFuncType]:
+        def Prepare(
+            on_simple_status_func: Callable[[str], None]
+        ) -> ExecuteTasksTypes.ExecuteFuncType | tuple[int, ExecuteTasksTypes.ExecuteFuncType]:
             # ----------------------------------------------------------------------
             def Execute(status: Status) -> int:
                 result, return_code = execute_func(context, status)

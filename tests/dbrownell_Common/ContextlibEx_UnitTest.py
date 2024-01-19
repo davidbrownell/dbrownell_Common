@@ -36,7 +36,9 @@ def test_ExitStackSingle():
     ):
         assert values == []
 
-    assert values == [1, ]
+    assert values == [
+        1,
+    ]
 
 
 # ----------------------------------------------------------------------
@@ -49,7 +51,10 @@ def test_ExitStackMultiple():
     ):
         assert values == []
 
-    assert values == [20, 1, ]
+    assert values == [
+        20,
+        1,
+    ]
 
 
 # ----------------------------------------------------------------------
@@ -66,4 +71,7 @@ def test_ExitStackWithExceptions():
     except Exception:
         pass
 
-    assert values == [20, 1, ]
+    assert values == [
+        20,
+        1,
+    ]

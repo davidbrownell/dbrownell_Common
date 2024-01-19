@@ -16,7 +16,6 @@
 """Enhancements for the subprocess library."""
 
 import copy
-import ctypes
 import os
 import subprocess
 import textwrap
@@ -43,7 +42,7 @@ class RunResult(object):
     returncode: int
     output: str
 
-    error_command_line: Optional[str]       = field(default=None)
+    error_command_line: Optional[str] = field(default=None)
 
     # ----------------------------------------------------------------------
     def __post_init__(self):
@@ -79,10 +78,10 @@ class RunResult(object):
 # ----------------------------------------------------------------------
 def Run(
     command_line: str,
-    cwd: Optional[Path]=None,
-    env: Optional[dict[str, str]]=None,
+    cwd: Optional[Path] = None,
+    env: Optional[dict[str, str]] = None,
     *,
-    supports_colors: Optional[bool]=None,
+    supports_colors: Optional[bool] = None,
 ) -> RunResult:
     """Runs a command line and returns the result."""
 
@@ -119,14 +118,14 @@ def Run(
 def Stream(
     command_line: str,
     stream: TextWriterT,
-    cwd: Optional[Path]=None,
-    env: Optional[dict[str, str]]=None,
+    cwd: Optional[Path] = None,
+    env: Optional[dict[str, str]] = None,
     *,
-    stdin: Optional[str]=None,
-    line_delimited_output: bool=False,      # Set to True to buffer lines
-    is_headless: Optional[bool]=None,
-    is_interactive: Optional[bool]=None,
-    supports_colors: Optional[bool]=None,
+    stdin: Optional[str] = None,
+    line_delimited_output: bool = False,  # Set to True to buffer lines
+    is_headless: Optional[bool] = None,
+    is_interactive: Optional[bool] = None,
+    supports_colors: Optional[bool] = None,
 ) -> int:
     output_func = cast(Callable[[str], None], stream.write)
     flush_func = stream.flush
@@ -235,8 +234,8 @@ def Stream(
 
                 result_code = result.wait() or 0
 
-        except IOError:                     # pragma: no cover
-            result_code = -1                # pragma: no cover
+        except IOError:  # pragma: no cover
+            result_code = -1  # pragma: no cover
 
         return result_code
 
@@ -291,23 +290,23 @@ class _ReadStateMachine(object):
         *,
         convert_newlines: bool,
     ):
-        self._input_stream                  = input_stream
-        self._convert_newlines              = convert_newlines
+        self._input_stream = input_stream
+        self._convert_newlines = convert_newlines
 
-        self._process_func: Callable[[int], Optional[list[int]]]            = self._ProcessStandard
+        self._process_func: Callable[[int], Optional[list[int]]] = self._ProcessStandard
 
-        self._buffered_input: Optional[int]             = None
-        self._buffered_output: list[int]                = []
+        self._buffered_input: Optional[int] = None
+        self._buffered_output: list[int] = []
 
     # ----------------------------------------------------------------------
     # |
     # |  Private Types
     # |
     # ----------------------------------------------------------------------
-    _a                                      = ord("a")
-    _z                                      = ord("z")
-    _A                                      = ord("A")
-    _Z                                      = ord("Z")
+    _a = ord("a")
+    _z = ord("z")
+    _A = ord("A")
+    _Z = ord("Z")
 
     # ----------------------------------------------------------------------
     # |
@@ -319,22 +318,17 @@ class _ReadStateMachine(object):
         cls,
         value: int,
     ) -> bool:
-        return (  # pragma: no cover
-            (cls._a <= value <= cls._z)
-            or (cls._A <= value <= cls._Z)
-        )
+        return (cls._a <= value <= cls._z) or (cls._A <= value <= cls._Z)  # pragma: no cover
 
     # ----------------------------------------------------------------------
     def _IsNewlineish(
         self,
         value: int,
     ) -> bool:
-        return (
-            self._convert_newlines and value in [
-                10, # '\r'
-                13, # '\n'
-            ]
-        )
+        return self._convert_newlines and value in [
+            10,  # '\r'
+            13,  # '\n'
+        ]
 
     # ----------------------------------------------------------------------
     @staticmethod
@@ -356,8 +350,8 @@ class _ReadStateMachine(object):
         # Attempt to decode as utf-8
         try:
             return result.decode("utf-8")
-        except (UnicodeDecodeError, LookupError):       # pragma: no cover
-            pass                                        # pragma: no cover
+        except (UnicodeDecodeError, LookupError):  # pragma: no cover
+            pass  # pragma: no cover
 
         raise Exception("The content '{}' could not be decoded.".format(result))  # pragma: no cover
 
@@ -387,7 +381,9 @@ class _ReadStateMachine(object):
 
             return None
 
-        return [value, ]
+        return [
+            value,
+        ]
 
     # ----------------------------------------------------------------------
     def _ProcessEscape(

@@ -48,7 +48,7 @@ class TypeDefinitionItem(object):
         cls,
         python_type: Type,
         *,
-        is_optional: bool=False,
+        is_optional: bool = False,
         **param_info_kwargs,
     ) -> "TypeDefinitionItem":
         if is_optional or _IsOptionalPythonType(python_type):
@@ -60,20 +60,19 @@ class TypeDefinitionItem(object):
 
 
 # ----------------------------------------------------------------------
-TypeDefinitionItemType                      = Union[
+TypeDefinitionItemType = Union[
     TypeDefinitionItem,
-
     # Note that the following values are converted into TypeDefinitionItem instances
-    Type,                                   # Python type annotation
+    Type,  # Python type annotation
     tuple[
         Type,
-        typer.models.ParameterInfo,         # The OptionInfo itself
+        typer.models.ParameterInfo,  # The OptionInfo itself
     ],
 ]
 
 
 # ----------------------------------------------------------------------
-TypeDefinitionsType                         = dict[str, TypeDefinitionItemType]
+TypeDefinitionsType = dict[str, TypeDefinitionItemType]
 
 
 # ----------------------------------------------------------------------
@@ -110,12 +109,12 @@ class PythonCodeGenerator(object):
 
     # ----------------------------------------------------------------------
     class ArgumentTypes(Enum):
-        CommaDelimited                      = auto()
-        DictArgs                            = auto()
-        KeywordArgs                         = auto()
+        CommaDelimited = auto()
+        DictArgs = auto()
+        KeywordArgs = auto()
 
     # ----------------------------------------------------------------------
-    DEFAULT_OPTION_TYPE_VALUES_VAR_NAME: ClassVar[str]  = "default_parameter_values"
+    DEFAULT_OPTION_TYPE_VALUES_VAR_NAME: ClassVar[str] = "default_parameter_values"
 
     # ----------------------------------------------------------------------
     python_parameters: dict[str, str]
@@ -126,7 +125,7 @@ class PythonCodeGenerator(object):
     def Create(
         cls,
         type_definitions: TypeDefinitionsType,
-        option_type_values_var_name: str=DEFAULT_OPTION_TYPE_VALUES_VAR_NAME,
+        option_type_values_var_name: str = DEFAULT_OPTION_TYPE_VALUES_VAR_NAME,
     ) -> "PythonCodeGenerator":
         parameters: dict[str, str] = {}
         types: dict[str, typer.models.ParameterInfo] = {}
@@ -173,9 +172,9 @@ class PythonCodeGenerator(object):
     def GenerateParameters(
         self,
         *,
-        single_line: bool=False,
-        indentation: int=4,
-        skip_first_line: bool=True,
+        single_line: bool = False,
+        indentation: int = 4,
+        skip_first_line: bool = True,
     ) -> str:
         if single_line:
             return ", ".join(parameter for parameter in self.python_parameters.values())
@@ -190,10 +189,10 @@ class PythonCodeGenerator(object):
     def GenerateArguments(
         self,
         *,
-        argument_type: "PythonCodeGenerator.ArgumentTypes"=ArgumentTypes.CommaDelimited,
-        single_line: bool=False,
-        indentation: int=4,
-        skip_first_line: bool=True,
+        argument_type: "PythonCodeGenerator.ArgumentTypes" = ArgumentTypes.CommaDelimited,
+        single_line: bool = False,
+        indentation: int = 4,
+        skip_first_line: bool = True,
     ) -> str:
         if argument_type == PythonCodeGenerator.ArgumentTypes.CommaDelimited:
             decorate_parameter_func = lambda value: value
@@ -205,10 +204,15 @@ class PythonCodeGenerator(object):
             assert False, argument_type  # pragma: no cover
 
         if single_line:
-            return ", ".join(decorate_parameter_func(parameter) for parameter in self.python_parameters.keys())
+            return ", ".join(
+                decorate_parameter_func(parameter) for parameter in self.python_parameters.keys()
+            )
 
         return TextwrapEx.Indent(
-            "\n".join("{},".format(decorate_parameter_func(parameter)) for parameter in self.python_parameters.keys()),
+            "\n".join(
+                "{},".format(decorate_parameter_func(parameter))
+                for parameter in self.python_parameters.keys()
+            ),
             indentation,
             skip_first_line=skip_first_line,
         )
@@ -222,7 +226,7 @@ class PythonCodeGenerator(object):
 def TyperDictArgument(
     type_definitions: TypeDefinitionsType,
     *,
-    allow_any__: bool=False,                # Do not produce errors when key values are provided that are not defined in type_definitions
+    allow_any__: bool = False,  # Do not produce errors when key values are provided that are not defined in type_definitions
     **argument_info_kwargs,
 ) -> typer.models.ArgumentInfo:
     """\
@@ -287,7 +291,7 @@ def TyperDictArgument(
 def TyperDictOption(
     type_definitions: TypeDefinitionsType,
     *option_info_args,
-    allow_any__: bool=False,                # Do not produce errors when key values are provided that are not defined in type_definitions
+    allow_any__: bool = False,  # Do not produce errors when key values are provided that are not defined in type_definitions
     **option_info_kwargs,
 ) -> typer.models.OptionInfo:
     """\
@@ -432,7 +436,7 @@ def ProcessDynamicArgs(
 def ResolveTypeDefinitions(
     type_definitions: TypeDefinitionsType,
     *,
-    force_optional: bool=False,
+    force_optional: bool = False,
 ) -> dict[str, TypeDefinitionItem]:
     # ----------------------------------------------------------------------
     def ResolveItem(
@@ -454,7 +458,9 @@ def ResolveTypeDefinitions(
 
         assert type_definition_item is not None
 
-        if force_optional and not isinstance(type_definition_item.parameter_info, typer.models.OptionInfo):
+        if force_optional and not isinstance(
+            type_definition_item.parameter_info, typer.models.OptionInfo
+        ):
             raise Exception("Optional types must be defined as typer.Option instances.")
 
         return type_definition_item
@@ -490,8 +496,8 @@ def _TypeDefinitionItemsToClickParams(
 
 
 # ----------------------------------------------------------------------
-_TyperT                                     = TypeVar("_TyperT", typer.models.ArgumentInfo, typer.models.OptionInfo)
-_TyperDictImplRegex                         = re.compile(
+_TyperT = TypeVar("_TyperT", typer.models.ArgumentInfo, typer.models.OptionInfo)
+_TyperDictImplRegex = re.compile(
     r"""(?#
     Start of Line                           )^(?#
     Key                                     )(?P<key>(?:\\[:=]|[^:=])+)(?#
@@ -511,7 +517,7 @@ def _TyperDictImpl(
     args: Optional[tuple[str, ...]],
     kwargs: dict[str, Any],
     *,
-    force_optional: bool=False,
+    force_optional: bool = False,
 ) -> _TyperT:
     click_params = _TypeDefinitionItemsToClickParams(
         ResolveTypeDefinitions(
@@ -558,7 +564,9 @@ def _TyperDictImpl(
 
         # Convert the results to a list to make it through the typer plumbing
         # unchanged (since the original type was decorated as a list)
-        return [results, ]
+        return [
+            results,
+        ]
 
     # ----------------------------------------------------------------------
 
@@ -580,7 +588,7 @@ def _ProcessArgumentsImpl(
     arguments: Iterable[tuple[str, Optional[str]]],
     *,
     ctx: Optional[typer.Context],
-    allow_unknown: bool=False,
+    allow_unknown: bool = False,
 ) -> dict[str, Any]:
     # Create information to map from the argument keyword to the result name
     argument_to_result_names: dict[str, str] = {}
@@ -649,7 +657,9 @@ def _ProcessArgumentsImpl(
 
         if is_list:
             if not isinstance(param_results, list):
-                param_results = [param_results, ]
+                param_results = [
+                    param_results,
+                ]
         else:
             if isinstance(param_results, list):
                 # Take the last value

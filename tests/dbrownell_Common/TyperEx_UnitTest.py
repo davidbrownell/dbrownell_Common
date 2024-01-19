@@ -40,20 +40,27 @@ class TestPythonCodeGenerator(object):
         ]
 
         assert _generator.GenerateParameters() == "\n    ".join(results)
-        assert _generator.GenerateParameters(indentation=2, skip_first_line=False) == "  {}".format("\n  ".join(results))
-        assert _generator.GenerateParameters(single_line=True) == " ".join(results)[:-1] # Remove trailing comma
+        assert _generator.GenerateParameters(indentation=2, skip_first_line=False) == "  {}".format(
+            "\n  ".join(results)
+        )
+        assert (
+            _generator.GenerateParameters(single_line=True) == " ".join(results)[:-1]
+        )  # Remove trailing comma
 
     # ----------------------------------------------------------------------
     def test_GenerateArgumentsCommaDelimited(self, _generator):
-        assert _generator.GenerateArguments() == textwrap.dedent(
-            """\
+        assert (
+            _generator.GenerateArguments()
+            == textwrap.dedent(
+                """\
             arg0,
                 arg1,
                 arg2,
                 arg3,
                 arg4,
             """,
-        ).rstrip()
+            ).rstrip()
+        )
 
     # ----------------------------------------------------------------------
     def test_GenerateArgumentsSingleLine(self, _generator):
@@ -61,27 +68,35 @@ class TestPythonCodeGenerator(object):
 
     # ----------------------------------------------------------------------
     def test_GenerateArgumentsDictArgs(self, _generator):
-        assert _generator.GenerateArguments(argument_type=PythonCodeGenerator.ArgumentTypes.DictArgs) == textwrap.dedent(
-            """\
+        assert (
+            _generator.GenerateArguments(argument_type=PythonCodeGenerator.ArgumentTypes.DictArgs)
+            == textwrap.dedent(
+                """\
             "arg0": arg0,
                 "arg1": arg1,
                 "arg2": arg2,
                 "arg3": arg3,
                 "arg4": arg4,
             """,
-        ).rstrip()
+            ).rstrip()
+        )
 
     # ----------------------------------------------------------------------
     def test_GenerateArgumentsKeywordArgs(self, _generator):
-        assert _generator.GenerateArguments(argument_type=PythonCodeGenerator.ArgumentTypes.KeywordArgs) == textwrap.dedent(
-            """\
+        assert (
+            _generator.GenerateArguments(
+                argument_type=PythonCodeGenerator.ArgumentTypes.KeywordArgs
+            )
+            == textwrap.dedent(
+                """\
             arg0=arg0,
                 arg1=arg1,
                 arg2=arg2,
                 arg3=arg3,
                 arg4=arg4,
             """,
-        ).rstrip()
+            ).rstrip()
+        )
 
     # ----------------------------------------------------------------------
     # ----------------------------------------------------------------------
@@ -105,17 +120,32 @@ class TestPythonCodeGenerator(object):
 class TestTyperDictArgument(object):
     # ----------------------------------------------------------------------
     def test_Standard(self, func_name, _app):
-        result = CliRunner().invoke(_app, [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14"])
+        result = CliRunner().invoke(
+            _app, [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14"]
+        )
 
         assert result.exit_code == 0
         assert result.stdout == "{'one': 'ONE', 'two': 123, 'three': [10, 20], 'four': 3.14}\n"
 
     # ----------------------------------------------------------------------
     def test_DuplicatedValue(self, func_name, _app):
-        result = CliRunner().invoke(_app, [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14", "one=duplicated"])
+        result = CliRunner().invoke(
+            _app,
+            [
+                func_name,
+                "one:ONE",
+                "two=123",
+                "three:10",
+                "three:20",
+                "four=3.14",
+                "one=duplicated",
+            ],
+        )
 
         assert result.exit_code == 0
-        assert result.stdout == "{'one': 'duplicated', 'two': 123, 'three': [10, 20], 'four': 3.14}\n"
+        assert (
+            result.stdout == "{'one': 'duplicated', 'two': 123, 'three': [10, 20], 'four': 3.14}\n"
+        )
 
     # ----------------------------------------------------------------------
     def test_OptionalValue(self, func_name, _app):
@@ -126,7 +156,9 @@ class TestTyperDictArgument(object):
 
     # ----------------------------------------------------------------------
     def test_ErrorWrongType(self, func_name, _app):
-        result = CliRunner().invoke(_app, [func_name, "one:ONE", "two=123", "three:a", "three:20", "four=3.14"])
+        result = CliRunner().invoke(
+            _app, [func_name, "one:ONE", "two=123", "three:a", "three:20", "four=3.14"]
+        )
 
         assert result.exit_code != 0
         assert "'a' is not a valid integer" in result.stdout
@@ -140,10 +172,16 @@ class TestTyperDictArgument(object):
 
     # ----------------------------------------------------------------------
     def test_ErrorExtraValue(self, func_name, _app):
-        result = CliRunner().invoke(_app, [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14", "invalid=2"])
+        result = CliRunner().invoke(
+            _app,
+            [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14", "invalid=2"],
+        )
 
         assert result.exit_code != 0
-        assert "'invalid' is not a valid key; valid keys are 'one', 'two', 'three', 'four'" in result.stdout
+        assert (
+            "'invalid' is not a valid key; valid keys are 'one', 'two', 'three', 'four'"
+            in result.stdout
+        )
 
     # ----------------------------------------------------------------------
     # ----------------------------------------------------------------------
@@ -172,7 +210,7 @@ class TestTyperDictArgument(object):
         # ----------------------------------------------------------------------
         @app.command("MyFunc2")
         def MyFunc2(
-            key_value_args: list[str]=typer_dict_argument,
+            key_value_args: list[str] = typer_dict_argument,
         ) -> None:
             print(PostprocessDictArgument(key_value_args))
 
@@ -192,7 +230,9 @@ class TestTyperDictOption(object):
 
     # ----------------------------------------------------------------------
     def test_PartialFill(self, _app):
-        result = CliRunner().invoke(_app, ["--key-value-args", "one:ONE", "--key-value-args", "two:2"])
+        result = CliRunner().invoke(
+            _app, ["--key-value-args", "one:ONE", "--key-value-args", "two:2"]
+        )
 
         assert result.exit_code == 0
         assert result.stdout == "{'one': 'ONE', 'two': 2}\n"
@@ -233,7 +273,7 @@ class TestTyperDictOption(object):
                         "four": (Optional[float], typer.Option(None)),
                     },
                 ),
-            ]=None,
+            ] = None,
         ) -> None:
             print(PostprocessDictArgument(key_value_args))
 
@@ -298,7 +338,22 @@ class TestProcessDynamicArgs(object):
 
     # ----------------------------------------------------------------------
     def test_ThreeOptional(self, _app):
-        result = CliRunner().invoke(_app, ["10", "--extra-args1", "99", "--extra-args2", "abc", "--extra-arg3", "1", "--extra-arg3", "2", "--extra-arg3", "3"])
+        result = CliRunner().invoke(
+            _app,
+            [
+                "10",
+                "--extra-args1",
+                "99",
+                "--extra-args2",
+                "abc",
+                "--extra-arg3",
+                "1",
+                "--extra-arg3",
+                "2",
+                "--extra-arg3",
+                "3",
+            ],
+        )
 
         assert result.exit_code == 0
         assert result.stdout == textwrap.dedent(
@@ -325,7 +380,7 @@ class TestProcessDynamicArgs(object):
         def MyFunc(
             ctx: typer.Context,
             arg1: Annotated[int, typer.Argument()],
-            arg2: Annotated[bool, typer.Option("--arg2")]=False,
+            arg2: Annotated[bool, typer.Option("--arg2")] = False,
         ) -> None:
             # Normally, the following options would be generated dynamically
             type_definitions = {

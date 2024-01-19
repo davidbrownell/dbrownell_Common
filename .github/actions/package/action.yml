@@ -54,18 +54,18 @@ runs:
   steps:
     - name: Bootstrap
       shell: ${{ inputs.shell_name }}
-      run: |-
+      run: |
         ${{ inputs.script_prefix }}Bootstrap${{ inputs.script_extension }} --python-version ${{ inputs.python_version }} --package
 
     - name: Update Version
       shell: ${{ inputs.shell_name }}
-      run: |-
+      run: |
         ${{ inputs.source_command }} ${{ inputs.script_prefix }}Activate${{ inputs.script_extension }}
         python Build.py UpdateVersion
 
     - name: Package
       shell: ${{ inputs.shell_name }}
-      run: |-
+      run: |
         ${{ inputs.source_command }} ${{ inputs.script_prefix }}Activate${{ inputs.script_extension }}
         python Build.py Package
 
@@ -78,6 +78,6 @@ runs:
     - name: Publish
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       shell: ${{ inputs.shell_name }}
-      run: |-
+      run: |
         ${{ inputs.source_command }} ${{ inputs.script_prefix }}Activate${{ inputs.script_extension }}
         python Build.py Publish ${{ inputs.pypi_token }} --production --verbose

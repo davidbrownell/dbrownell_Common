@@ -90,7 +90,9 @@ def test_SetError():
 
     with pytest.raises(
         Exception,
-        match=re.escape("Capabilities are assigned to a stream when it is first created and cannot be changed; consider using the `Clone` method."),
+        match=re.escape(
+            "Capabilities are assigned to a stream when it is first created and cannot be changed; consider using the `Clone` method."
+        ),
     ):
         Capabilities(stream=stream)
 
@@ -110,4 +112,6 @@ def test_Compare():
     assert Capabilities(ignore_environment=True) != Capabilities(is_headless=False)
     assert Capabilities(ignore_environment=True) < Capabilities(is_headless=False)
     assert Capabilities(is_headless=False) > Capabilities(ignore_environment=True)
-    assert Capabilities(is_headless=False, is_interactive=True, supports_colors=False) < Capabilities(is_headless=False, is_interactive=True, supports_colors=True)
+    assert Capabilities(
+        is_headless=False, is_interactive=True, supports_colors=False
+    ) < Capabilities(is_headless=False, is_interactive=True, supports_colors=True)
