@@ -75,8 +75,16 @@ runs:
         name: "${{ inputs.operating_system }}; ${{ inputs.python_version }}"
         path: dist/
 
-    - name: Publish
+    - uses: dorny/paths-filter@v2
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      id: has_code_changes
+      with:
+        filters: |
+          src:
+            - 'src/**'
+
+    - name: Publish
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.has_code_changes.outputs.src == 'true' }}
       shell: ${{ inputs.shell_name }}
       run: |
         ${{ inputs.source_command }} ${{ inputs.script_prefix }}Activate${{ inputs.script_extension }}
