@@ -67,7 +67,6 @@ dynamic = [
     "version",
 ]
 
-
 [project.optional-dependencies]
 dev = [
     "black == 23.*",
