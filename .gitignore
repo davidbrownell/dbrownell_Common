@@ -1,7 +1,7 @@
-Activate.cmd
-Activate.sh
-Deactivate.cmd
-Deactivate.sh
+Activate*.cmd
+Activate*.sh
+Deactivate*.cmd
+Deactivate*.sh
 
 **/__pycache__/**
 **/Generated/**
