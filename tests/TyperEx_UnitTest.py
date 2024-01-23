@@ -17,7 +17,6 @@
 
 import textwrap
 
-from pathlib import Path
 from typing import Annotated
 
 import pytest
