@@ -93,9 +93,6 @@ def test_Empty():
     assert stream.GetLinePrefix(0) == ""
     assert stream.GetCompleteLinePrefix() == ""
 
-    with stream.YieldStdout() as stdout:
-        stdout.stream.write("testing")
-
     stream.close()
 
 

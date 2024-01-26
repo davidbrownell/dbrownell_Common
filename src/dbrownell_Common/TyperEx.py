@@ -60,7 +60,7 @@ class TypeDefinitionItem(object):
 
 
 # ----------------------------------------------------------------------
-TypeDefinitionItemType = Union[
+TypeDefinitionItemType = Union[  # pylint: disable=invalid-name
     TypeDefinitionItem,
     # Note that the following values are converted into TypeDefinitionItem instances
     Type,  # Python type annotation
@@ -109,6 +109,8 @@ class PythonCodeGenerator(object):
 
     # ----------------------------------------------------------------------
     class ArgumentTypes(Enum):
+        """Indicates how the generation should generate the output."""
+
         CommaDelimited = auto()
         DictArgs = auto()
         KeywordArgs = auto()
@@ -573,11 +575,11 @@ def _TyperDictImpl(
     return typer_type(
         **{
             **kwargs,
-            **dict(
-                default=...,
-                callback=NewCallback,
-                param_decls=args,
-            ),
+            **{
+                "default": ...,
+                "callback": NewCallback,
+                "param_decls": args,
+            },
         },
     )
 

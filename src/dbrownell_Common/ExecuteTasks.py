@@ -175,7 +175,9 @@ class TransformResultComplete(object):
 
 
 # ----------------------------------------------------------------------
-TransformedType = TypeVar("TransformedType", covariant=True)
+TransformedType = TypeVar(  # pylint: disable=invalid-name, typevar-name-incorrect-variance
+    "TransformedType", covariant=True
+)
 
 
 # ----------------------------------------------------------------------
@@ -491,8 +493,9 @@ def YieldQueueExecutor(
                                 task_desc, prepare_func = queue.pop(0)
 
                             # ----------------------------------------------------------------------
-                            def Init(
-                                *args, **kwargs
+                            def Init(  # pylint: disable=unused-argument
+                                *args,
+                                **kwargs,
                             ) -> tuple[
                                 Path, ExecuteTasksTypes.PrepareFuncType
                             ]:  # pylint: disable=unused-argument
@@ -1021,9 +1024,11 @@ def _GenerateNoopStatusInfo(
     class StatusFactory(_StatusFactory):  # pylint: disable=missing-class-docstring
         # ----------------------------------------------------------------------
         @contextmanager
-        def CreateStatus(
-            self, *args, **kwargs
-        ) -> Iterator[_InternalStatus]:  # pylint: disable=unused-argument
+        def CreateStatus(  # pylint: disable=unused-argument
+            self,
+            *args,
+            **kwargs,
+        ) -> Iterator[_InternalStatus]:
             yield StatusImpl()
 
         # ----------------------------------------------------------------------
@@ -1261,7 +1266,9 @@ def _TransformCompressed(
                     task_data = tasks[this_task_index]
 
                     # ----------------------------------------------------------------------
-                    def Init(*args, **kwargs) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
+                    def Init(
+                        *args, **kwargs  # pylint: disable=unused-argument
+                    ) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
                         # ----------------------------------------------------------------------
                         def Prepare(
                             on_simple_status_func: Callable[[str], None],

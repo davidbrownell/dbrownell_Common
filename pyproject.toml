@@ -71,6 +71,7 @@ dynamic = [
 dev = [
     "black == 23.*",
     "coverage == 7.*",
+    "dbrownell_DevTools",
     "pylint == 3.*",
     "pytest == 7.*",
     "pytest-benchmark == 4.*",
