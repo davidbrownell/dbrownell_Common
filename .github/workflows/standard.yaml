@@ -31,7 +31,7 @@ jobs:
   # ----------------------------------------------------------------------
   action_contexts:
     name: "Display GitHub Action Contexts"
-    uses: davidbrownell/PythonBootstrapper/.github/workflows/callable_action_contexts.yaml@main
+    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_action_contexts.yaml@main
 
   # ----------------------------------------------------------------------
   validate:
@@ -71,12 +71,12 @@ jobs:
 
       - name: Initialize
         id: Initialize
-        uses: davidbrownell/PythonBootstrapper/.github/actions/initialize@main
+        uses: davidbrownell/dbrownell_DevTools/.github/actions/initialize@main
         with:
           operating_system: ${{ matrix.os }}
 
       - name: Validate
-        uses: ./.github/actions/validate
+        uses: davidbrownell/dbrownell_DevTools/.github/actions/validate@main
         with:
           operating_system: ${{ matrix.os }}
           python_version: ${{ matrix.python_version }}
@@ -122,12 +122,12 @@ jobs:
 
       - name: Initialize
         id: Initialize
-        uses: davidbrownell/PythonBootstrapper/.github/actions/initialize@main
+        uses: davidbrownell/dbrownell_DevTools/.github/actions/initialize@main
         with:
           operating_system: ubuntu-latest
 
       - name: Package
-        uses: ./.github/actions/package
+        uses: davidbrownell/dbrownell_DevTools/.github/actions/package@main
         with:
           operating_system: ${{ matrix.os }}
           python_version: ${{ matrix.python_version }}

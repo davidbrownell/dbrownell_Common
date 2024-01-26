@@ -41,7 +41,7 @@ DISPLAYED_EXCEPTION_ATTRIBUTE_NAME: str = "_done_manager_displayed_exception___"
 # ----------------------------------------------------------------------
 # |  Optional Functionality if typer is installed
 try:
-    _original_exception_hook = None
+    _original_exception_hook = None  # pylint: disable=invalid-name
 
     # ----------------------------------------------------------------------
     def _ExceptionHook(
@@ -66,7 +66,7 @@ try:
         typer = sys.modules["typer"]
 
         _original_exception_hook = (
-            typer.main._original_except_hook
+            typer.main._original_except_hook  # pylint: disable=protected-access
         )  # pylint: disable=protected-access
         typer.main._original_except_hook = _ExceptionHook  # pylint: disable=protected-access
     else:
@@ -97,6 +97,8 @@ try:
 except ImportError:
     # ----------------------------------------------------------------------
     class ExitException(Exception):
+        """Exception generated in place of a call to sys.exit."""
+
         # ----------------------------------------------------------------------
         def __init__(
             self,

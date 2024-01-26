@@ -267,7 +267,7 @@ class StreamDecorator(TextWriter):
         if not content:
             return chars_written
 
-        for line, has_newline in self.__class__._EnumLines(
+        for line, has_newline in self.__class__._EnumLines(  # pylint: disable=protected-access
             content
         ):  # pylint: disable=protected-access
             if self._col_offset == 0 and (line or self._decorate_empty_lines):
@@ -382,9 +382,11 @@ class StreamDecorator(TextWriter):
             return column, []
 
         if isinstance(self._streams[0], StreamDecorator):
-            column, prefixes = self._streams[0]._GetLinePrefixInfo(
+            column, prefixes = self._streams[  # pylint: disable=protected-access
+                0
+            ]._GetLinePrefixInfo(  # pylint: disable=protected-access
                 column, include_self=True
-            )  # pylint: disable=protected-access
+            )
         else:
             prefixes = []
 

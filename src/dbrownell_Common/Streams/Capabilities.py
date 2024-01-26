@@ -176,7 +176,9 @@ class Capabilities(object):
                         if console.width < self.__class__.DEFAULT_COLUMNS:
                             # Importing here to avoid circular imports
                             from dbrownell_Common import TextwrapEx
-                            from dbrownell_Common.Streams.StreamDecorator import StreamDecorator
+                            from dbrownell_Common.Streams.StreamDecorator import (
+                                StreamDecorator,
+                            )  # pylint: disable=cyclic-import
 
                             StreamDecorator(
                                 sys.stdout,
