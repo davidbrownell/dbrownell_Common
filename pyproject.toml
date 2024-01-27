@@ -151,9 +151,7 @@ disable = [
     "super-with-arguments",                 # added
     "too-few-public-methods",               # added
     "unnecessary-lambda-assignment",        # added
-    "unnecessary-pass",                     # added
     "unspecified-encoding",                 # added
-    "useless-object-inheritance",           # added
 ]
 
 # ----------------------------------------------------------------------

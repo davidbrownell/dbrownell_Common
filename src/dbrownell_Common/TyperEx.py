@@ -35,7 +35,7 @@ from dbrownell_Common import TextwrapEx
 # |
 # ----------------------------------------------------------------------
 @dataclass(frozen=True)
-class TypeDefinitionItem(object):
+class TypeDefinitionItem:
     """Information used to generate a dynamic command line argument."""
 
     # ----------------------------------------------------------------------
@@ -77,7 +77,7 @@ TypeDefinitionsType = dict[str, TypeDefinitionItemType]
 
 # ----------------------------------------------------------------------
 @dataclass(frozen=True)
-class PythonCodeGenerator(object):
+class PythonCodeGenerator:
     """\
     Object able to generate python code based on the type definitions provided to it.
 

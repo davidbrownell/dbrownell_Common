@@ -25,7 +25,7 @@ from dbrownell_Common.Types import *
 # ----------------------------------------------------------------------
 def test_ExtensionAndOverride():
     # ----------------------------------------------------------------------
-    class MyObject(object):
+    class MyObject:
         @extension
         def ExtensionMethod(self) -> str:
             return "extension"

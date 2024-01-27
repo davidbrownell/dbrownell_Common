@@ -215,7 +215,7 @@ class StreamDecorator(TextWriter):
 
     # ----------------------------------------------------------------------
     @dataclass
-    class YieldStdoutContext(object):
+    class YieldStdoutContext:
         stream: TextWriterT
         line_prefix: str
         persist_content: bool = field(kw_only=True)

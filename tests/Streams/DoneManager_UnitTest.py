@@ -808,7 +808,7 @@ def test_WarningPrecedence():
 
 
 # ----------------------------------------------------------------------
-class TestWriteStatus(object):
+class TestWriteStatus:
     # ----------------------------------------------------------------------
     def test_Standard(self):
         stream = _FakeStream(
@@ -1445,7 +1445,7 @@ def test_YieldStream():
 
 
 # ----------------------------------------------------------------------
-class TestYieldVerboseStream(object):
+class TestYieldVerboseStream:
     # ----------------------------------------------------------------------
     def test_Standard(self):
         sink = _CreateSink()
@@ -1477,7 +1477,7 @@ class TestYieldVerboseStream(object):
 
 
 # ----------------------------------------------------------------------
-class TestYieldDebugStream(object):
+class TestYieldDebugStream:
     # ----------------------------------------------------------------------
     def test_Standard(self):
         sink = _CreateSink()
@@ -1510,7 +1510,7 @@ class TestYieldDebugStream(object):
 
 
 # ----------------------------------------------------------------------
-class TestYieldStdout(object):
+class TestYieldStdout:
     # ----------------------------------------------------------------------
     def test_Standard(self):
         with DoneManager.Create(sys.stdout, "Testing") as dm:

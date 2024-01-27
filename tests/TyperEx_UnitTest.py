@@ -27,7 +27,7 @@ from dbrownell_Common.TyperEx import *
 
 
 # ----------------------------------------------------------------------
-class TestPythonCodeGenerator(object):
+class TestPythonCodeGenerator:
     # ----------------------------------------------------------------------
     def test_GenerateParametersStandard(self, _generator):
         results: list[str] = [
@@ -116,7 +116,7 @@ class TestPythonCodeGenerator(object):
 
 # ----------------------------------------------------------------------
 @pytest.mark.parametrize("func_name", ["MyFunc1", "MyFunc2"])
-class TestTyperDictArgument(object):
+class TestTyperDictArgument:
     # ----------------------------------------------------------------------
     def test_Standard(self, func_name, _app):
         result = CliRunner().invoke(
@@ -219,7 +219,7 @@ class TestTyperDictArgument(object):
 
 
 # ----------------------------------------------------------------------
-class TestTyperDictOption(object):
+class TestTyperDictOption:
     # ----------------------------------------------------------------------
     def test_Empty(self, _app):
         result = CliRunner().invoke(_app, [])
@@ -282,7 +282,7 @@ class TestTyperDictOption(object):
 
 
 # ----------------------------------------------------------------------
-class TestProcessDynamicArgs(object):
+class TestProcessDynamicArgs:
     # ----------------------------------------------------------------------
     def test_SingleArg(self, _app):
         result = CliRunner().invoke(_app, ["10"])
