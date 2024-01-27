@@ -61,7 +61,7 @@ class TransformException(Exception):
 
 # ----------------------------------------------------------------------
 @dataclass
-class TaskData(object):
+class TaskData:
     """Data associated with a single task."""
 
     # ----------------------------------------------------------------------
@@ -113,7 +113,7 @@ class Status(ABC):
 
 
 # ----------------------------------------------------------------------
-class ExecuteTasksTypes(object):
+class ExecuteTasksTypes:
     """Types used by ExecuteTasks."""
 
     # ----------------------------------------------------------------------
@@ -166,7 +166,7 @@ class ExecuteTasksTypes(object):
 
 # ----------------------------------------------------------------------
 @dataclass
-class TransformResultComplete(object):
+class TransformResultComplete:
     """Complex result returned by a transform function."""
 
     value: Any
@@ -181,7 +181,7 @@ TransformedType = TypeVar(  # pylint: disable=invalid-name, typevar-name-incorre
 
 
 # ----------------------------------------------------------------------
-class TransformTasksExTypes(object):
+class TransformTasksExTypes:
     """Types used by TransformTasksEx."""
 
     # ----------------------------------------------------------------------
@@ -218,7 +218,7 @@ class TransformTasksExTypes(object):
 
 
 # ----------------------------------------------------------------------
-class TransformTasksTypes(object):
+class TransformTasksTypes:
     """Types used by TransformTasks."""
 
     # ----------------------------------------------------------------------
@@ -234,7 +234,7 @@ class TransformTasksTypes(object):
 
 
 # ----------------------------------------------------------------------
-class YieldQueueExecutorTypes(object):
+class YieldQueueExecutorTypes:
     """Types used by YieldQueueExecutor."""
 
     # ----------------------------------------------------------------------

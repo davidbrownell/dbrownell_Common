@@ -31,7 +31,7 @@ TextWriterT = TextIO | TextWriter
 
 # ----------------------------------------------------------------------
 @functools.total_ordering
-class Capabilities(object):
+class Capabilities:
     """Capabilities of a stream."""
 
     # ----------------------------------------------------------------------

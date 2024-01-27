@@ -26,7 +26,7 @@ from dbrownell_Common.Streams.Capabilities import Capabilities
 
 
 # ----------------------------------------------------------------------
-class TestRun(object):
+class TestRun:
     # ----------------------------------------------------------------------
     def test_Standard(self):
         result = Run("echo Hello World!")
@@ -66,7 +66,7 @@ class TestRun(object):
             result.RaiseOnError()
 
     # ----------------------------------------------------------------------
-    class TestColors(object):
+    class TestColors:
         command_line = '''python -c "import sys; from dbrownell_Common.TextwrapEx import CreateErrorText; from dbrownell_Common.Streams.Capabilities import Capabilities; print(CreateErrorText('Hello!', supports_colors=Capabilities.Get(sys.stdout).supports_colors));"'''
 
         # ----------------------------------------------------------------------
@@ -118,7 +118,7 @@ class TestRun(object):
 
 
 # ----------------------------------------------------------------------
-class TestStream(object):
+class TestStream:
     # ----------------------------------------------------------------------
     def test_Standard(self):
         mock = Mock()

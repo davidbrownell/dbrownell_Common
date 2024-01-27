@@ -69,7 +69,7 @@ def test_DebugPrefix():
     ],
     ids=["error", "warning", "info", "success", "verbose", "debug"],
 )
-class TestCreateDecoratedText(object):
+class TestCreateDecoratedText:
     # ----------------------------------------------------------------------
     def test_Standard(self, test_data):
         assert test_data[2]("test") == "\x1b[{}m{}:\x1b[0m test".format(test_data[1], test_data[0])
@@ -142,7 +142,7 @@ class TestCreateDecoratedText(object):
 
 
 # ----------------------------------------------------------------------
-class TestCreateStatusText(object):
+class TestCreateStatusText:
     # ----------------------------------------------------------------------
     def test_Standard(self):
         assert (
@@ -182,7 +182,7 @@ class TestCreateStatusText(object):
 
 
 # ----------------------------------------------------------------------
-class TestIndent(object):
+class TestIndent:
     # ----------------------------------------------------------------------
     def test_WhitespacePrefix(self):
         assert (

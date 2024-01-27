@@ -35,7 +35,7 @@ from dbrownell_Common.Streams.StreamDecorator import TextWriterT
 # |
 # ----------------------------------------------------------------------
 @dataclass
-class RunResult(object):
+class RunResult:
     """Result of running a process."""
 
     # ----------------------------------------------------------------------
@@ -245,7 +245,7 @@ def Stream(
 # |  Private Types
 # |
 # ----------------------------------------------------------------------
-class _ReadStateMachine(object):
+class _ReadStateMachine:
     """Reads content produced by a stream, ensuring and ansi escape sequences are properly grouped."""
 
     # ----------------------------------------------------------------------

@@ -194,7 +194,7 @@ class Flags(Flag):
 
 # ----------------------------------------------------------------------
 @dataclass(frozen=True)
-class Args(object):
+class Args:
     """Arguments provided when creating DoneManager instances"""
 
     # ----------------------------------------------------------------------
@@ -280,7 +280,7 @@ class TopLevelArgs(Args):
 
 # ----------------------------------------------------------------------
 @dataclass
-class DoneManager(object):
+class DoneManager:
     """Object that helps when writing nested output."""
 
     # ----------------------------------------------------------------------
