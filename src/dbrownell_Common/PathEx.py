@@ -138,3 +138,32 @@ def CreateRelativePath(
         relative_path = relative_path.joinpath(*dest_path.parts[matching_index:])
 
     return relative_path
+
+
+# ----------------------------------------------------------------------
+def GetSizeDisplay(
+    path_or_num_bytes: Path | int,
+):
+    if isinstance(path_or_num_bytes, Path):
+        num_bytes = float(path_or_num_bytes.stat().st_size)
+    elif isinstance(path_or_num_bytes, int):
+        num_bytes = float(path_or_num_bytes)
+    else:
+        assert False, path_or_num_bytes  # pragma: no cover
+
+    for unit in [
+        "",
+        "K",
+        "M",
+        "G",
+        "T",
+        "P",
+        "E",
+        "Z",
+    ]:
+        if num_bytes < 1024.0:
+            return "{:.1f} {}B".format(num_bytes, unit)
+
+        num_bytes /= 1024.0
+
+    return "{:.1f} YiB".format(num_bytes)

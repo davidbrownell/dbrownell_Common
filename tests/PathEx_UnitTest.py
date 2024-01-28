@@ -143,3 +143,20 @@ def test_CreateRelativePath():
     assert CreateRelativePath(PurePath("/a/b"), PurePath("/a/c")) == PurePath("../c")
     assert CreateRelativePath(PurePath("/a/b/c"), PurePath("/a/b/d/e")) == PurePath("../d/e")
     assert CreateRelativePath(PurePath("/a/b/c"), PurePath("/x/y/z")) == PurePath("../../../x/y/z")
+
+
+# ----------------------------------------------------------------------
+def test_GetSizeDisplay():
+    assert GetSizeDisplay(1000) == "1000.0 B"
+    assert GetSizeDisplay(10000) == "9.8 KB"
+    assert GetSizeDisplay(100000) == "97.7 KB"
+    assert GetSizeDisplay(1000000) == "976.6 KB"
+    assert GetSizeDisplay(10000000) == "9.5 MB"
+    assert GetSizeDisplay(100000000) == "95.4 MB"
+    assert GetSizeDisplay(1000000000) == "953.7 MB"
+    assert GetSizeDisplay(10000000000) == "9.3 GB"
+    assert GetSizeDisplay(100000000000000000) == "88.8 PB"
+    assert GetSizeDisplay(1000000000000000000000) == "867.4 EB"
+    assert GetSizeDisplay(10000000000000000000000000) == "8.3 YiB"
+    assert GetSizeDisplay(1000000000000000000000000000000) == "827180.6 YiB"
+    assert GetSizeDisplay(Path(__file__)) != ""
