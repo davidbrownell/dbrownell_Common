@@ -67,6 +67,8 @@ dynamic = [
     "version",
 ]
 
+readme = "README.md"
+
 [project.optional-dependencies]
 dev = [
     "black == 23.*",
