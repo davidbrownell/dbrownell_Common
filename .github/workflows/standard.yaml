@@ -65,7 +65,7 @@ jobs:
     name: Postprocess Coverage Info
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
-    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_python_package_coverage.yaml@main
+    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_package_python_coverage.yaml@main
     with:
       gist_id: f15146b1b8fdc0a5d45ac0eb786a84f7
       gist_filename: dbrownell_Common_coverage.json
@@ -99,8 +99,37 @@ jobs:
       python_version: ${{ matrix.python_version }}
 
   # ----------------------------------------------------------------------
-  publish:
+  package_validation:
     needs: package
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+
+        python_version:
+          - "3.12"
+          - "3.11"
+          - "3.10"
+          # - "3.9"  # Not supported
+          # - "3.8"  # Not supported
+
+    name: Package Validation
+
+    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_validate_python_package.yaml@main
+    with:
+      operating_system: ${{ matrix.os }}
+      python_version: ${{ matrix.python_version }}
+      package_name: dbrownell_Common
+      validation_command: python -c "from dbrownell_Common import __version__; print(__version__)"
+
+  # ----------------------------------------------------------------------
+  publish:
+    needs: package_validation
 
     name: Publish
 
