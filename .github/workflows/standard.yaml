@@ -31,7 +31,7 @@ jobs:
   # ----------------------------------------------------------------------
   action_contexts:
     name: "Display GitHub Action Contexts"
-    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_action_contexts.yaml@main
+    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_display_action_contexts.yaml@main
 
   # ----------------------------------------------------------------------
   validate:
@@ -53,7 +53,7 @@ jobs:
 
     name: Validate
 
-    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_python_validate.yaml@main
+    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_validate_python.yaml@main
     with:
       operating_system: ${{ matrix.os }}
       python_version: ${{ matrix.python_version }}
@@ -72,7 +72,7 @@ jobs:
     secrets: inherit
 
   # ----------------------------------------------------------------------
-  package:
+  create_package:
     needs: validate
 
     strategy:
@@ -91,16 +91,16 @@ jobs:
           # - "3.9"  # Not supported
           # - "3.8"  # Not supported
 
-    name: Package
+    name: Create Package
 
-    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_python_package.yaml@main
+    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_create_python_package.yaml@main
     with:
       operating_system: ${{ matrix.os }}
       python_version: ${{ matrix.python_version }}
 
   # ----------------------------------------------------------------------
-  package_validation:
-    needs: package
+  validate_package:
+    needs: create_package
 
     strategy:
       fail-fast: false
@@ -118,20 +118,19 @@ jobs:
           # - "3.9"  # Not supported
           # - "3.8"  # Not supported
 
-    name: Package Validation
+    name: Validate Package
 
     uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_validate_python_package.yaml@main
     with:
       operating_system: ${{ matrix.os }}
       python_version: ${{ matrix.python_version }}
-      package_name: dbrownell_Common
       validation_command: python -c "from dbrownell_Common import __version__; print(__version__)"
 
   # ----------------------------------------------------------------------
   publish:
-    needs: package_validation
+    needs: validate_package
 
     name: Publish
 
-    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_python_publish.yaml@main
+    uses: davidbrownell/dbrownell_DevTools/.github/workflows/callable_publish_python.yaml@main
     secrets: inherit
