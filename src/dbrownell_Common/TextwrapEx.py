@@ -7,10 +7,8 @@
 # |
 # ----------------------------------------------------------------------
 # |
-# |  Copyright David Brownell 2023
-# |  Distributed under the Boost Software License, Version 1.0. See
-# |  accompanying file LICENSE_1_0.txt or copy at
-# |  http://www.boost.org/LICENSE_1_0.txt.
+# |  Copyright David Brownell 2023-24
+# |  Distributed under the MIT License.
 # |
 # ----------------------------------------------------------------------
 """Enhancements for the textwrap library."""
@@ -51,7 +49,7 @@ COLOR_OFF = "\033[0m"  # Reset
 def _CreateCustomPrefixFunc(
     header: str,
     color_value: str,
-) -> Callable[[bool,], str]:  # supports_colors
+) -> Callable[[bool,], str,]:  # supports_colors
     # ----------------------------------------------------------------------
     def Impl(
         supports_colors: bool,
