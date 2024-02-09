@@ -7,10 +7,8 @@
 # |
 # ----------------------------------------------------------------------
 # |
-# |  Copyright David Brownell 2024
-# |  Distributed under the Boost Software License, Version 1.0. See
-# |  accompanying file LICENSE_1_0.txt or copy at
-# |  http://www.boost.org/LICENSE_1_0.txt.
+# |  Copyright David Brownell 2023-24
+# |  Distributed under the MIT License.
 # |
 # ----------------------------------------------------------------------
 """Contains functionality to execute multiple tasks in parallel."""
@@ -913,13 +911,15 @@ def _GenerateProgressStatusInfo(
                         header=header,
                         name=task_data.display,
                         result=task_data.result,
-                        short_desc=" ({})".format(task_data.short_desc)
-                        if task_data.short_desc
-                        else "",
-                        suffix=str(task_data.log_filename)
-                        if dm.capabilities.is_headless
-                        else "[link=file:///{}]View Log[/]".format(
-                            task_data.log_filename.as_posix(),
+                        short_desc=(
+                            " ({})".format(task_data.short_desc) if task_data.short_desc else ""
+                        ),
+                        suffix=(
+                            str(task_data.log_filename)
+                            if dm.capabilities.is_headless
+                            else "[link=file:///{}]View Log[/]".format(
+                                task_data.log_filename.as_posix(),
+                            )
                         ),
                     ),
                     highlight=False,
@@ -1046,11 +1046,13 @@ def _GenerateNoopStatusInfo(
                 name=task_data.display,
                 result=task_data.result,
                 short_desc=" ({})".format(task_data.short_desc) if task_data.short_desc else "",
-                suffix=str(task_data.log_filename)
-                if dm.capabilities.is_headless
-                else TextwrapEx.CreateAnsiHyperLink(
-                    "file:///{}".format(task_data.log_filename.as_posix()),
-                    "View Log",
+                suffix=(
+                    str(task_data.log_filename)
+                    if dm.capabilities.is_headless
+                    else TextwrapEx.CreateAnsiHyperLink(
+                        "file:///{}".format(task_data.log_filename.as_posix()),
+                        "View Log",
+                    )
                 ),
             )
 

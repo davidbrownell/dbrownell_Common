@@ -7,10 +7,8 @@
 # |
 # ----------------------------------------------------------------------
 # |
-# |  Copyright David Brownell 2023
-# |  Distributed under the Boost Software License, Version 1.0. See
-# |  accompanying file LICENSE_1_0.txt or copy at
-# |  http://www.boost.org/LICENSE_1_0.txt.
+# |  Copyright David Brownell 2023-24
+# |  Distributed under the MIT License.
 # |
 # ----------------------------------------------------------------------
 """Contains the Capabilities object"""
@@ -288,9 +286,9 @@ class Capabilities:
             columns=columns if columns is not None else self.columns,
             is_headless=is_headless if is_headless is not None else self.is_headless,
             is_interactive=is_interactive if is_interactive is not None else self.is_interactive,
-            supports_colors=supports_colors
-            if supports_colors is not None
-            else self.supports_colors,
+            supports_colors=(
+                supports_colors if supports_colors is not None else self.supports_colors
+            ),
         )
 
     # ----------------------------------------------------------------------
