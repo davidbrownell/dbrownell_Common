@@ -19,6 +19,7 @@ from pathlib import Path
 
 import typer
 
+from dbrownell_Common import PathEx
 from dbrownell_DevTools.RepoBuildTools import Python as RepoBuildTools
 from typer.core import TyperGroup
 
@@ -42,14 +43,9 @@ app = typer.Typer(
 
 
 # ----------------------------------------------------------------------
-this_dir = Path(__file__).parent
-assert this_dir.is_dir(), this_dir
-
-src_dir = this_dir / "src" / "dbrownell_Common"
-assert src_dir.is_dir(), src_dir
-
-tests_dir = this_dir / "tests"
-assert tests_dir.is_dir(), tests_dir
+this_dir = PathEx.EnsureDir(Path(__file__).parent)
+src_dir = PathEx.EnsureDir(this_dir / "src" / "dbrownell_Common")
+tests_dir = PathEx.EnsureDir(this_dir / "tests")
 
 
 # ----------------------------------------------------------------------
