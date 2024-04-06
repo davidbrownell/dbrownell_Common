@@ -270,7 +270,7 @@ class TestTyperDictOption:
                         "four": (Optional[float], typer.Option(None)),
                     },
                 ),
-            ] = None,
+            ] = [],
         ) -> None:
             print(PostprocessDictArgument(key_value_args))
 
