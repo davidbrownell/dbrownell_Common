@@ -117,7 +117,7 @@ class StreamDecorator(TextWriter):
             capabilities = lowest_capabilities
 
         else:
-            capabilities = Capabilities()
+            capabilities = Capabilities(ignore_environment=True)
 
         Capabilities.Set(self, capabilities)
 
