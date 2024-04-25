@@ -945,7 +945,7 @@ def _GenerateProgressStatusInfo(
             for color_on, count, suffix in [
                 (success_on, success_count, "succeeded"),
                 (error_on, error_count, "failed"),
-                (warning_on, warning_count, inflect.no("warning", warning_count)),
+                (warning_on, warning_count, inflect.plural_verb("warning", warning_count)),
             ]:
                 if count == 0:
                     content = "0"
