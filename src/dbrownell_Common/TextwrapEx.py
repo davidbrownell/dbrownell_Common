@@ -49,7 +49,12 @@ COLOR_OFF = "\033[0m"  # Reset
 def _CreateCustomPrefixFunc(
     header: str,
     color_value: str,
-) -> Callable[[bool,], str,]:  # supports_colors
+) -> Callable[
+    [
+        bool,
+    ],
+    str,
+]:  # supports_colors
     # ----------------------------------------------------------------------
     def Impl(
         supports_colors: bool,

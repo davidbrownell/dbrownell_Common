@@ -714,8 +714,7 @@ class DoneManager:
             *,
             supports_colors: bool = True,
             decorate_every_line: bool = False,
-        ) -> str:
-            ...  # pragma: no cover
+        ) -> str: ...  # pragma: no cover
 
     # ----------------------------------------------------------------------
     # |

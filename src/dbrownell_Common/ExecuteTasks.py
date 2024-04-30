@@ -121,7 +121,10 @@ class ExecuteTasksTypes:
         def __call__(
             self,
             context: Any,  # TaskData.context
-        ) -> tuple[Path, "ExecuteTasksTypes.PrepareFuncType",]:  # (Log filename, PrepareFuncType)
+        ) -> tuple[
+            Path,
+            "ExecuteTasksTypes.PrepareFuncType",
+        ]:  # (Log filename, PrepareFuncType)
             ...  # pragma: no cover
 
     # ----------------------------------------------------------------------
@@ -142,8 +145,7 @@ class ExecuteTasksTypes:
                 "ExecuteTasksTypes.ExecuteFuncType",
             ],
             "ExecuteTasksTypes.ExecuteFuncType",
-        ]:
-            ...  # pragma: no cover
+        ]: ...  # pragma: no cover
 
     # ----------------------------------------------------------------------
     class ExecuteFuncType(Protocol):
@@ -158,8 +160,7 @@ class ExecuteTasksTypes:
                 Optional[str],  # Final status message
             ],
             int,  # Return code
-        ]:
-            ...  # pragma: no cover
+        ]: ...  # pragma: no cover
 
 
 # ----------------------------------------------------------------------
@@ -201,8 +202,7 @@ class TransformTasksExTypes:
                 "TransformTasksExTypes.TransformFuncType",
             ],
             "TransformTasksExTypes.TransformFuncType",
-        ]:
-            ...  # pragma: no cover
+        ]: ...  # pragma: no cover
 
     # ----------------------------------------------------------------------
     class TransformFuncType(Protocol[TransformedType]):
@@ -211,8 +211,7 @@ class TransformTasksExTypes:
         def __call__(
             self,
             status: Status,
-        ) -> TransformResultComplete | TransformedType:
-            ...  # pragma: no cover
+        ) -> TransformResultComplete | TransformedType: ...  # pragma: no cover
 
 
 # ----------------------------------------------------------------------
@@ -227,8 +226,7 @@ class TransformTasksTypes:
             self,
             context: Any,
             status: Status,
-        ) -> TransformResultComplete | TransformedType:
-            ...  # pragma: no cover
+        ) -> TransformResultComplete | TransformedType: ...  # pragma: no cover
 
 
 # ----------------------------------------------------------------------
@@ -253,8 +251,7 @@ class YieldQueueExecutorTypes:
                 "YieldQueueExecutorTypes.ExecuteFuncType",
             ],
             "YieldQueueExecutorTypes.ExecuteFuncType",
-        ]:
-            ...  # pragma: no cover
+        ]: ...  # pragma: no cover
 
     # ----------------------------------------------------------------------
     class ExecuteFuncType(Protocol):
@@ -274,8 +271,7 @@ class YieldQueueExecutorTypes:
             self,
             description: str,
             prepare_func: "YieldQueueExecutorTypes.PrepareFuncType",
-        ) -> None:
-            ...  # pragma: no cover
+        ) -> None: ...  # pragma: no cover
 
 
 # ----------------------------------------------------------------------
@@ -612,7 +608,12 @@ def _GenerateStatusInfo(
     *,
     quiet: bool,
     refresh_per_second: Optional[float],
-) -> Iterator[tuple[list[_StatusFactory], Callable[[TaskData], None],],]:
+) -> Iterator[
+    tuple[
+        list[_StatusFactory],
+        Callable[[TaskData], None],
+    ],
+]:
     success_count = 0
     error_count = 0
     warning_count = 0
@@ -696,7 +697,12 @@ def _GenerateProgressStatusInfo(
     *,
     quiet: bool,
     refresh_per_second: Optional[float],
-) -> Iterator[tuple[list[_StatusFactory], Callable[[TaskData], None],],]:
+) -> Iterator[
+    tuple[
+        list[_StatusFactory],
+        Callable[[TaskData], None],
+    ],
+]:
     with dm.YieldStdout() as stdout_context:
         stdout_context.persist_content = False
 
@@ -1001,7 +1007,12 @@ def _GenerateNoopStatusInfo(
     *,
     quiet: bool,
     refresh_per_second: Optional[float],  # pylint: disable=unused-argument
-) -> Iterator[tuple[list[_StatusFactory], Callable[[TaskData], None],],]:
+) -> Iterator[
+    tuple[
+        list[_StatusFactory],
+        Callable[[TaskData], None],
+    ],
+]:
     # ----------------------------------------------------------------------
     class StatusImpl(_InternalStatus):  # pylint: disable=missing-class-docstring
         # ----------------------------------------------------------------------

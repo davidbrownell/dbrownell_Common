@@ -375,7 +375,10 @@ class StreamDecorator(TextWriter):
         column: int,
         *,
         include_self: bool,
-    ) -> tuple[int, list[str],]:  # column offset  # prefix values
+    ) -> tuple[
+        int,
+        list[str],
+    ]:  # column offset  # prefix values
         if not self._streams:
             return column, []
 
