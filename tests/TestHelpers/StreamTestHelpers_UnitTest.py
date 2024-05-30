@@ -258,3 +258,12 @@ class TestGenerateDoneManagerAndContent:
             DONE! (0, <scrubbed duration>)
             """,
         )
+
+
+# ----------------------------------------------------------------------
+def test_InitializeStreamCapabilites():
+    # It should be safe to call this multiple times
+    InitializeStreamCapabilities()
+    InitializeStreamCapabilities()
+
+    assert True
