@@ -48,7 +48,7 @@ def ScrubDuration(
     else:
         replace_func = lambda _: "<scrubbed duration>"
 
-    content = re.sub(
+    return re.sub(
         r"""(?#
             Hours                           )(?P<hours>\d+)(?#
             sep                             )\:(?#
@@ -59,11 +59,6 @@ def ScrubDuration(
         replace_func,
         content,
     )
-
-    # Remove any trailing whitespace
-    content = "\n".join(line.rstrip() for line in content.split("\n"))
-
-    return content
 
 
 # ----------------------------------------------------------------------
@@ -124,6 +119,9 @@ def GenerateDoneManagerAndContent(
         keep_seconds=keep_duration_seconds,
     )
 
+    # Remove any trailing whitespace
+    content = "\n".join(line.rstrip() for line in content.split("\n"))
+
     assert expected_result is None or final_result == expected_result, (
         expected_result,
         final_result,
@@ -144,6 +142,8 @@ def InitializeStreamCapabilities(
     ):
         Capabilities(
             columns=120,
+            is_headless=True,
+            is_interactive=False,
             supports_colors=True,
             stream=stream,
             no_column_warning=True,
