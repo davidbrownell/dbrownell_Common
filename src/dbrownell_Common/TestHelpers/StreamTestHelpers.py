@@ -23,6 +23,44 @@ from dbrownell_Common.Streams.DoneManager import DoneManager, Flags as DoneManag
 
 
 # ----------------------------------------------------------------------
+def ScrubDuration(
+    content: str,
+    *,
+    keep_hours: bool = False,
+    keep_minutes: bool = False,
+    keep_seconds: bool = False,
+) -> str:
+    if keep_hours or keep_minutes or keep_seconds:
+        # ----------------------------------------------------------------------
+        def Replace(
+            match: Match,
+        ) -> str:
+            hours = match.group("hours") if keep_hours else "??"
+            minutes = match.group("minutes") if keep_minutes else "??"
+            seconds = match.group("seconds") if keep_seconds else "??"
+
+            return f"{hours}:{minutes}:{seconds}"
+
+        # ----------------------------------------------------------------------
+
+        replace_func = Replace
+    else:
+        replace_func = lambda _: "<scrubbed duration>"
+
+    return re.sub(
+        r"""(?#
+            Hours                           )(?P<hours>\d+)(?#
+            sep                             )\:(?#
+            Minutes                         )(?P<minutes>\d+)(?#
+            sep                             )\:(?#
+            Seconds                         )(?P<seconds>\d+(?:\.\d+)?)(?#
+            )""",
+        replace_func,
+        content,
+    )
+
+
+# ----------------------------------------------------------------------
 def GenerateDoneManagerAndContent(
     heading: str = "Heading",
     *,
@@ -73,34 +111,11 @@ def GenerateDoneManagerAndContent(
 
         final_result = dm.result
 
-    # Remove durations from the output, as they are going to vary from execution-to-execution
-    if keep_duration_hours or keep_duration_minutes or keep_duration_seconds:
-        # ----------------------------------------------------------------------
-        def Replace(
-            match: Match,
-        ) -> str:
-            hours = match.group("hours") if keep_duration_hours else "??"
-            minutes = match.group("minutes") if keep_duration_minutes else "??"
-            seconds = match.group("seconds") if keep_duration_seconds else "??"
-
-            return f"{hours}:{minutes}:{seconds}"
-
-        # ----------------------------------------------------------------------
-
-        replace_func = Replace
-    else:
-        replace_func = lambda _: "<scrubbed duration>"
-
-    content = re.sub(
-        r"""(?#
-            Hours                           )(?P<hours>\d+)(?#
-            sep                             )\:(?#
-            Minutes                         )(?P<minutes>\d+)(?#
-            sep                             )\:(?#
-            Seconds                         )(?P<seconds>\d+(?:\.\d+)?)(?#
-            )""",
-        replace_func,
+    content = ScrubDuration(
         sink.getvalue(),  # type: ignore
+        keep_hours=keep_duration_hours,
+        keep_minutes=keep_duration_minutes,
+        keep_seconds=keep_duration_seconds,
     )
 
     # Remove any trailing whitespace
