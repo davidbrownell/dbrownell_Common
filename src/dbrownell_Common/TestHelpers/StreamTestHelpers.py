@@ -14,6 +14,7 @@
 """Test helpers for content found in ../Streams"""
 
 import re
+import sys
 
 from io import StringIO
 from typing import Generator, Match, Optional
@@ -47,7 +48,7 @@ def ScrubDuration(
     else:
         replace_func = lambda _: "<scrubbed duration>"
 
-    return re.sub(
+    content = re.sub(
         r"""(?#
             Hours                           )(?P<hours>\d+)(?#
             sep                             )\:(?#
@@ -58,6 +59,11 @@ def ScrubDuration(
         replace_func,
         content,
     )
+
+    # Remove any trailing whitespace
+    content = "\n".join(line.rstrip() for line in content.split("\n"))
+
+    return content
 
 
 # ----------------------------------------------------------------------
@@ -118,12 +124,27 @@ def GenerateDoneManagerAndContent(
         keep_seconds=keep_duration_seconds,
     )
 
-    # Remove any trailing whitespace
-    content = "\n".join(line.rstrip() for line in content.split("\n"))
-
     assert expected_result is None or final_result == expected_result, (
         expected_result,
         final_result,
         content,
     )
     yield content
+
+
+# ----------------------------------------------------------------------
+def InitializeStreamCapabilities(
+    stream=sys.stdout,
+) -> None:
+    """Ensure that the provided stream outputs consistently within a variety of different environments."""
+
+    if not hasattr(
+        stream,
+        Capabilities._EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME,  # pylint: disable=protected-access
+    ):
+        Capabilities(
+            columns=120,
+            supports_colors=True,
+            stream=stream,
+            no_column_warning=True,
+        )

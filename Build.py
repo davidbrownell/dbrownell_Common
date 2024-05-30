@@ -45,17 +45,21 @@ app = typer.Typer(
 # ----------------------------------------------------------------------
 this_dir = PathEx.EnsureDir(Path(__file__).parent)
 src_dir = PathEx.EnsureDir(this_dir / "src" / "dbrownell_Common")
-tests_dir = PathEx.EnsureDir(this_dir / "tests")
 
 
 # ----------------------------------------------------------------------
 Black = RepoBuildTools.BlackFuncFactory(this_dir, app)
 Pylint = RepoBuildTools.PylintFuncFactory(src_dir, app)
 Pytest = RepoBuildTools.PytestFuncFactory(
-    tests_dir, "dbrownell_Common", app, default_min_coverage=80.0
+    this_dir,
+    "dbrownell_Common",
+    app,
+    default_min_coverage=80.0,
 )
 UpdateVersion = RepoBuildTools.UpdateVersionFuncFactory(
-    src_dir.parent, src_dir / "__init__.py", app
+    src_dir.parent,
+    src_dir / "__init__.py",
+    app,
 )
 Package = RepoBuildTools.PackageFuncFactory(this_dir, app)
 Publish = RepoBuildTools.PublishFuncFactory(this_dir, app)
