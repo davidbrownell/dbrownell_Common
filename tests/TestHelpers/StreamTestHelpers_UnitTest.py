@@ -23,6 +23,110 @@ from dbrownell_Common.TestHelpers.StreamTestHelpers import *
 
 
 # ----------------------------------------------------------------------
+class TestScrubDuration:
+    # ----------------------------------------------------------------------
+    def test_Standard(self):
+        assert (
+            ScrubDuration(
+                textwrap.dedent(
+                    """\
+                    1:23:45
+                    22:33:44
+                    """,
+                ),
+            )
+            == textwrap.dedent(
+                """\
+                <scrubbed duration>
+                <scrubbed duration>
+                """,
+            )
+        )
+
+    # ----------------------------------------------------------------------
+    def test_KeepHours(self):
+        assert (
+            ScrubDuration(
+                textwrap.dedent(
+                    """\
+                    1:23:45
+                    22:33:44
+                    """,
+                ),
+                keep_hours=True,
+            )
+            == textwrap.dedent(
+                """\
+                1:??:??
+                22:??:??
+                """,
+            )
+        )
+
+    # ----------------------------------------------------------------------
+    def test_KeepMinutes(self):
+        assert (
+            ScrubDuration(
+                textwrap.dedent(
+                    """\
+                    1:23:45
+                    22:33:44
+                    """,
+                ),
+                keep_minutes=True,
+            )
+            == textwrap.dedent(
+                """\
+                ??:23:??
+                ??:33:??
+                """,
+            )
+        )
+
+    # ----------------------------------------------------------------------
+    def test_KeepSeconds(self):
+        assert (
+            ScrubDuration(
+                textwrap.dedent(
+                    """\
+                    1:23:45
+                    22:33:44
+                    """,
+                ),
+                keep_seconds=True,
+            )
+            == textwrap.dedent(
+                """\
+                ??:??:45
+                ??:??:44
+                """,
+            )
+        )
+
+    # ----------------------------------------------------------------------
+    def test_KeepAll(self):
+        assert (
+            ScrubDuration(
+                textwrap.dedent(
+                    """\
+                    1:23:45
+                    22:33:44
+                    """,
+                ),
+                keep_hours=True,
+                keep_minutes=True,
+                keep_seconds=True,
+            )
+            == textwrap.dedent(
+                """\
+                1:23:45
+                22:33:44
+                """,
+            )
+        )
+
+
+# ----------------------------------------------------------------------
 class TestGenerateDoneManagerAndContent:
     # ----------------------------------------------------------------------
     def test_Standard(self):
