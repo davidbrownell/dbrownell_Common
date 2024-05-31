@@ -13,6 +13,7 @@
 # ----------------------------------------------------------------------
 """Test helpers for content found in ../Streams"""
 
+import os
 import re
 import sys
 
@@ -134,17 +135,33 @@ def GenerateDoneManagerAndContent(
 def InitializeStreamCapabilities(
     stream=sys.stdout,
 ) -> None:
-    """Ensure that the provided stream outputs consistently within a variety of different environments."""
+    """\
+    Ensure that the provided stream outputs consistently within a variety of different environments.
 
-    if not hasattr(
+    Usage within a test:
+        @pytest.fixture(InitializeStreamCapabilities(), scope="session", autouse=True)
+
+    """
+
+    # Initialization can only happen once
+    if hasattr(
         stream,
         Capabilities._EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME,  # pylint: disable=protected-access
     ):
-        Capabilities(
-            columns=120,
-            is_headless=True,
-            is_interactive=False,
-            supports_colors=True,
-            stream=stream,
-            no_column_warning=True,
-        )
+        return
+
+    # Override any environment variables that might impact the way in which the output is generated
+    os.environ[Capabilities.SIMULATE_TERMINAL_COLUMNS_ENV_VAR] = str(Capabilities.DEFAULT_COLUMNS)
+    os.environ[Capabilities.SIMULATE_TERMINAL_INTERACTIVE_ENV_VAR] = "0"
+    os.environ[Capabilities.SIMULATE_TERMINAL_COLORS_ENV_VAR] = "1"
+    os.environ[Capabilities.SIMULATE_TERMINAL_HEADLESS_ENV_VAR] = "1"
+
+    # Associate the capabilities with the stream
+    Capabilities(
+        columns=Capabilities.DEFAULT_COLUMNS,
+        is_interactive=False,
+        is_headless=True,
+        supports_colors=True,
+        stream=stream,
+        no_column_warning=True,
+    )
