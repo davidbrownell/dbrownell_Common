@@ -139,6 +139,45 @@ def CreateRelativePath(
 
 
 # ----------------------------------------------------------------------
+def GetCommonPath(
+    *path_args: Path,
+) -> Optional[Path]:
+    paths = [path.resolve() for path in path_args]
+
+    if len(paths) == 1:
+        if paths[0].is_dir():
+            return paths[0]
+
+        return paths[0].parent
+
+    part_index = 0
+
+    while True:
+        is_match = True
+
+        if part_index > len(paths[0].parts) - 1:
+            break
+
+        for path in paths[1:]:
+            if (
+                part_index > len(path.parts) - 1
+                or path.parts[part_index] != paths[0].parts[part_index]
+            ):
+                is_match = False
+                break
+
+        if not is_match:
+            break
+
+        part_index += 1
+
+    if part_index == 0:
+        return None
+
+    return Path(*paths[0].parts[:part_index])
+
+
+# ----------------------------------------------------------------------
 def GetSizeDisplay(
     path_or_num_bytes: Path | int,
 ):
