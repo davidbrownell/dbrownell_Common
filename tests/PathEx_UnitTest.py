@@ -144,6 +144,25 @@ def test_CreateRelativePath():
 
 
 # ----------------------------------------------------------------------
+def test_GetCommonPath():
+    parent_dir = Path(__file__).parent
+
+    assert GetCommonPath(parent_dir) == parent_dir
+    assert GetCommonPath(Path(__file__)) == parent_dir
+    assert GetCommonPath(Path("a/b/c"), Path("a/b/d")) == Path("a/b").resolve()
+    assert GetCommonPath(Path("a/b/c"), Path("a/b")) == Path("a/b").resolve()
+    assert (
+        GetCommonPath(Path("a/b/c"), Path("1/2/3")) == Path.cwd()
+    )  # This happens because the paths are resolved before processing
+    assert GetCommonPath(Path("a/b/c"), Path("a/b/c/d")) == Path("a/b/c").resolve()
+
+    if os.name == "nt":
+        assert GetCommonPath(Path(r"C:\a\b\c"), Path(r"D:\1\2\3")) is None
+    else:
+        assert GetCommonPath(Path("/a/b/c"), Path("/1/2/3")) == Path("/")
+
+
+# ----------------------------------------------------------------------
 def test_GetSizeDisplay():
     assert GetSizeDisplay(1000) == "1000.0 B"
     assert GetSizeDisplay(10000) == "9.8 KB"
