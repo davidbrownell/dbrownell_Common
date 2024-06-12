@@ -188,8 +188,12 @@ def GetSizeDisplay(
     else:
         assert False, path_or_num_bytes  # pragma: no cover
 
+    if num_bytes < 1024.0:
+        return "{} B".format(int(num_bytes))
+
+    num_bytes /= 1024.0
+
     for unit in [
-        "",
         "K",
         "M",
         "G",
