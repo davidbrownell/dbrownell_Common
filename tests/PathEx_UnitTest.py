@@ -164,7 +164,7 @@ def test_GetCommonPath():
 
 # ----------------------------------------------------------------------
 def test_GetSizeDisplay():
-    assert GetSizeDisplay(1000) == "1000.0 B"
+    assert GetSizeDisplay(1000) == "1000 B"
     assert GetSizeDisplay(10000) == "9.8 KB"
     assert GetSizeDisplay(100000) == "97.7 KB"
     assert GetSizeDisplay(1000000) == "976.6 KB"
