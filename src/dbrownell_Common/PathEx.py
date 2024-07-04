@@ -208,3 +208,18 @@ def GetSizeDisplay(
         num_bytes /= 1024.0
 
     return "{:.1f} YiB".format(num_bytes)
+
+
+# ----------------------------------------------------------------------
+def GetUserDirectory() -> Path:
+    if os.name == "nt":
+        home_drive = os.getenv("HOMEDRIVE")
+        home_path = os.getenv("HOMEPATH")
+
+        if home_drive is not None and home_path is not None:
+            return Path(home_drive) / home_path
+
+        assert home_path is not None
+        return Path(home_path)
+
+    return Path(os.path.expanduser("~"))

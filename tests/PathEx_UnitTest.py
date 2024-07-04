@@ -177,3 +177,10 @@ def test_GetSizeDisplay():
     assert GetSizeDisplay(10000000000000000000000000) == "8.3 YiB"
     assert GetSizeDisplay(1000000000000000000000000000000) == "827180.6 YiB"
     assert GetSizeDisplay(Path(__file__)) != ""
+
+
+# ----------------------------------------------------------------------
+def test_GetUserDirectory():
+    result = GetUserDirectory()
+
+    assert result.is_dir(), result
