@@ -16,6 +16,7 @@
 import math
 import textwrap
 
+from enum import auto, Enum
 from typing import Callable, Optional
 
 
@@ -45,6 +46,37 @@ DEBUG_COLOR_ON = BRIGHT_WHITE_COLOR_ON
 COLOR_OFF = "\033[0m"  # Reset
 
 
+# ----------------------------------------------------------------------
+class Justify(Enum):
+    """Line justification"""
+
+    # ----------------------------------------------------------------------
+    Left = auto()
+    Center = auto()
+    Right = auto()
+
+    # ----------------------------------------------------------------------
+    def Justify(
+        self,
+        value: str,
+        padding: int,
+    ) -> str:
+        if self == Justify.Left:
+            return value.ljust(padding)
+
+        if self == Justify.Center:
+            return value.center(padding)
+
+        if self == Justify.Right:
+            return value.rjust(padding)
+
+        assert False, self  # pragma: no cover
+
+
+# ----------------------------------------------------------------------
+# |
+# |  Public Functions
+# |
 # ----------------------------------------------------------------------
 def _CreateCustomPrefixFunc(
     header: str,
@@ -306,6 +338,71 @@ def CreateAnsiHyperLink(
     value: str,
 ) -> str:
     return "\033]8;;{}\033\\{}\033]8;;\033\\".format(url, value)
+
+
+# ----------------------------------------------------------------------
+def CreateTable(
+    headers: list[str],
+    all_values: list[list[str]],
+    col_justifications: list[Justify] | None = None,
+    decorate_values_func: Callable[[int, list[str]], list[str]] | None = None,
+    on_col_sizes_calculated: Callable[[list[int]], None] | None = None,
+    col_padding: str = "  ",
+    *,
+    decorate_headers: bool = False,
+) -> str:
+    """Prints a table with the provided headers and values."""
+
+    assert col_justifications is None or len(col_justifications) == len(headers)
+    assert decorate_headers is False or decorate_values_func
+
+    col_justifications = col_justifications or [Justify.Left] * len(headers)
+    decorate_values_func = decorate_values_func or (lambda _, row: row)
+    on_col_sizes_calculated = on_col_sizes_calculated or (lambda _: None)
+
+    # Calculate the col sizes
+    col_sizes = [len(header) for header in headers]
+
+    # Get the column size for each row
+    for row in all_values:
+        assert len(row) == len(headers)
+        for index, col_value in enumerate(row):
+            col_sizes[index] = max(len(col_value), col_sizes[index])
+
+    on_col_sizes_calculated(col_sizes)
+
+    # Create the template
+    row_template = col_padding.join(
+        "{{:<{}}}".format(col_size) if col_size != 0 else "{}" for col_size in col_sizes
+    )
+
+    # Create the rows
+    rows: list[str] = []
+
+    # ----------------------------------------------------------------------
+    def CreateRow(
+        index: int,
+        values: list[str],
+    ) -> None:
+        decorated_values: list[str] = []
+
+        for col_justification, col_value, col_size in zip(col_justifications, values, col_sizes):
+            decorated_values.append(col_justification.Justify(col_value, col_size))
+
+        if index >= 0 or decorate_headers:
+            decorated_values = decorate_values_func(index, decorated_values)
+
+        rows.append(row_template.format(*decorated_values).rstrip())
+
+    # ----------------------------------------------------------------------
+
+    CreateRow(-2, headers)
+    CreateRow(-1, ["-" * col_size for col_size in col_sizes])
+
+    for index, values in enumerate(all_values):
+        CreateRow(index, values)
+
+    return "\n".join(rows) + "\n"
 
 
 # ----------------------------------------------------------------------
