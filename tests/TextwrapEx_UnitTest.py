@@ -19,6 +19,13 @@ from dbrownell_Common.TextwrapEx import *
 
 
 # ----------------------------------------------------------------------
+def test_Justify():
+    assert Justify.Left.Justify("test", 10) == "test      "
+    assert Justify.Center.Justify("test", 10) == "   test   "
+    assert Justify.Right.Justify("test", 10) == "      test"
+
+
+# ----------------------------------------------------------------------
 def test_CreateErrorPrefix():
     assert CreateErrorPrefix(False) == "ERROR: "
     assert CreateErrorPrefix(True) == "\x1b[31;1mERROR:\x1b[0m "
@@ -258,3 +265,108 @@ def test_CreateAnsiHyperlink():
         CreateAnsiHyperLink("https://test.com", "Test Link")
         == "\x1b]8;;https://test.com\x1b\\Test Link\x1b]8;;\x1b\\"
     )
+
+
+# ----------------------------------------------------------------------
+class TestCreateTable:
+    # ----------------------------------------------------------------------
+    def test_Simple(self):
+        assert CreateTable(
+            ["One", "Two", "Three"],
+            [
+                ["AAAAA", "aaaaa", "1"],
+                ["BBBBB", "bbbbb", "2"],
+                ["CCCCCCCCC", "cccccccc", "3"],
+            ],
+        ) == textwrap.dedent(
+            """\
+            One        Two       Three
+            ---------  --------  -----
+            AAAAA      aaaaa     1
+            BBBBB      bbbbb     2
+            CCCCCCCCC  cccccccc  3
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_Centered(self):
+        assert CreateTable(
+            ["One", "Two", "Three"],
+            [
+                ["AAAAA", "aaaaa", "1"],
+                ["BBBBB", "bbbbb", "2"],
+                ["CCCCCCCCC", "cccccccc", "3"],
+            ],
+            [Justify.Center, Justify.Center, Justify.Center],
+        ) == textwrap.dedent(
+            """\
+               One       Two     Three
+            ---------  --------  -----
+              AAAAA     aaaaa      1
+              BBBBB     bbbbb      2
+            CCCCCCCCC  cccccccc    3
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_Right(self):
+        assert CreateTable(
+            ["One", "Two", "Three"],
+            [
+                ["AAAAA", "aaaaa", "1"],
+                ["BBBBB", "bbbbb", "2"],
+                ["CCCCCCCCC", "cccccccc", "3"],
+            ],
+            [Justify.Right, Justify.Right, Justify.Right],
+        ) == textwrap.dedent(
+            """\
+                  One       Two  Three
+            ---------  --------  -----
+                AAAAA     aaaaa      1
+                BBBBB     bbbbb      2
+            CCCCCCCCC  cccccccc      3
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_Decorate(self):
+        assert CreateTable(
+            ["One", "Two", "Three"],
+            [
+                ["AAAAA", "aaaaa", "1"],
+                ["BBBBB", "bbbbb", "2"],
+                ["CCCCCCCCC", "cccccccc", "3"],
+            ],
+            [Justify.Right, Justify.Right, Justify.Right],
+            lambda index, values: [values[0].lower(), values[1].upper(), values[2]],
+        ) == textwrap.dedent(
+            """\
+                  One       Two  Three
+            ---------  --------  -----
+                aaaaa     AAAAA      1
+                bbbbb     BBBBB      2
+            ccccccccc  CCCCCCCC      3
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_DecorateHeaders(self):
+        assert CreateTable(
+            ["One", "Two", "Three"],
+            [
+                ["AAAAA", "aaaaa", "1"],
+                ["BBBBB", "bbbbb", "2"],
+                ["CCCCCCCCC", "cccccccc", "3"],
+            ],
+            [Justify.Right, Justify.Right, Justify.Right],
+            lambda index, values: [values[0].lower(), values[1].upper(), values[2]],
+            decorate_headers=True,
+        ) == textwrap.dedent(
+            """\
+                  one       TWO  Three
+            ---------  --------  -----
+                aaaaa     AAAAA      1
+                bbbbb     BBBBB      2
+            ccccccccc  CCCCCCCC      3
+            """,
+        )
