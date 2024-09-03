@@ -1,17 +1,5 @@
-# ----------------------------------------------------------------------
-# |
-# |  pyproject.toml
-# |
-# |  David Brownell <db@DavidBrownell.com>
-# |      2023-12-18 15:22:11
-# |
-# ----------------------------------------------------------------------
-# |
-# |  Copyright David Brownell 2023-24
-# |  Distributed under the MIT License.
-# |
-# ----------------------------------------------------------------------
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+
 [build-system]
 requires = ["setuptools >= 63.0"]
 build-backend = "setuptools.build_meta"
@@ -23,16 +11,16 @@ build-backend = "setuptools.build_meta"
 # ----------------------------------------------------------------------
 [project]
 name = "dbrownell_Common"
-description = "Common python code used across a variety of different projects."
+description = "Common python functionality used across a number of different packages."
 
-license = { text = "MIT License" }
+license = { text = "MIT" }
 
 authors = [
-    { name = "David Brownell", email = "db@DavidBrownell.com" },
+    { name = "David Brownell", email = "github@DavidBrownell.com" },
 ]
 
 keywords = [
-    # TODO
+    # TODO: Add keywords specific to your project.
 ]
 
 # https://pypi.org/classifiers/
@@ -69,7 +57,7 @@ readme = "README.md"
 
 [project.optional-dependencies]
 dev = [
-    "dbrownell_DevTools == 0.*",
+    "dbrownell_DevTools",
 ]
 
 package = [
@@ -84,7 +72,7 @@ Repository = "https://github.com/davidbrownell/dbrownell_Common"
 
 # ----------------------------------------------------------------------
 # |
-# |  Black
+# |  black
 # |
 # ----------------------------------------------------------------------
 [tool.black]
@@ -92,7 +80,7 @@ line-length = 100
 
 # ----------------------------------------------------------------------
 # |
-# |  Pylint
+# |  pylint
 # |
 # ----------------------------------------------------------------------
 [tool.pylint.basic]
@@ -116,7 +104,7 @@ max-args = 10
 max-parents = 15
 
 [tool.pylint.main]
-ignore-patterns = [
+ignore-paths = [
     # Note that the pylint vscode extension has trouble with wrapping these patterns in quotes
     # (which is required to parse the file correctly). Because of this, each pattern must be
     # converted to a glob pattern and specified in the pylint vscode settings as well.
@@ -150,7 +138,7 @@ disable = [
 
 # ----------------------------------------------------------------------
 # |
-# |  Pyright
+# |  pyright
 # |
 # ----------------------------------------------------------------------
 [tool.pyright]
@@ -164,7 +152,7 @@ reportMissingTypeStubs = false
 
 # ----------------------------------------------------------------------
 # |
-# |  Pytest
+# |  pytest
 # |
 # ----------------------------------------------------------------------
 [tool.pytest.ini_options]
@@ -174,8 +162,11 @@ python_files = [
 
 # ----------------------------------------------------------------------
 # |
-# |  Setuptools
+# |  setuptools
 # |
 # ----------------------------------------------------------------------
 [tool.setuptools.dynamic]
 version = { attr = "dbrownell_Common.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

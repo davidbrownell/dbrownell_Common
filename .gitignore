@@ -1,3 +1,5 @@
+post_generation_actions.html
+
 Activate*.cmd
 Activate*.sh
 Deactivate*.cmd
@@ -5,9 +7,13 @@ Deactivate*.sh
 
 **/__pycache__/**
 **/Generated/**
+
 **/.coverage
 **/lcov.info
 **/.vscode
 
+build/**
 dist/**
 src/dbrownell_Common.egg-info/**
+
+minisign_key.pri
