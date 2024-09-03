@@ -1,17 +1,4 @@
-# ----------------------------------------------------------------------
-# |
-# |  Build.py
-# |
-# |  David Brownell <db@DavidBrownell.com>
-# |      2023-12-23 12:50:20
-# |
-# ----------------------------------------------------------------------
-# |
-# |  Copyright David Brownell 2023-24
-# |  Distributed under the MIT License.
-# |
-# ----------------------------------------------------------------------
-"""Builds functionality for this python module."""
+"""Build tasks for this python project."""
 
 import sys
 
@@ -44,25 +31,39 @@ app = typer.Typer(
 
 # ----------------------------------------------------------------------
 this_dir = PathEx.EnsureDir(Path(__file__).parent)
-src_dir = PathEx.EnsureDir(this_dir / "src" / "dbrownell_Common")
+src_dir = PathEx.EnsureDir(this_dir / "src")
+package_dir = PathEx.EnsureDir(src_dir / "dbrownell_Common")
 
 
 # ----------------------------------------------------------------------
 Black = RepoBuildTools.BlackFuncFactory(this_dir, app)
-Pylint = RepoBuildTools.PylintFuncFactory(src_dir, app)
+
+Pylint = RepoBuildTools.PylintFuncFactory(
+    package_dir,
+    app,
+    default_min_score=9.5,
+)
+
 Pytest = RepoBuildTools.PytestFuncFactory(
     this_dir,
-    "dbrownell_Common",
+    package_dir.name,
     app,
-    default_min_coverage=80.0,
+    default_min_coverage=80.0,  # TODO: Increase coverage to 90%
 )
+
 UpdateVersion = RepoBuildTools.UpdateVersionFuncFactory(
-    src_dir.parent,
-    src_dir / "__init__.py",
+    src_dir,
+    PathEx.EnsureFile(package_dir / "__init__.py"),
     app,
 )
+
 Package = RepoBuildTools.PackageFuncFactory(this_dir, app)
 Publish = RepoBuildTools.PublishFuncFactory(this_dir, app)
+
+CreateDockerImage = RepoBuildTools.CreateDockerImageFuncFactory(
+    this_dir,
+    app,
+)
 
 
 # ----------------------------------------------------------------------
