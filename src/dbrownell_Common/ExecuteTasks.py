@@ -910,8 +910,20 @@ def _GenerateProgressStatusInfo(
                     color = "yellow"
                     header = "WARNING"
 
+                if not task_data.log_filename.is_file():
+                    suffix = ""
+                else:
+                    if dm.capabilities.is_headless:
+                        suffix = str(task_data.log_filename)
+                    else:
+                        suffix = "[link=file:///{}]View Log[/]".format(
+                            task_data.log_filename.as_posix()
+                        )
+
+                    suffix = r" \[{}]".format(suffix)
+
                 progress_bar.print(
-                    r"{prefix}[bold {color}]{header}:[/] {name}: {result}{short_desc} \[{suffix}]".format(
+                    r"{prefix}[bold {color}]{header}:[/] {name}: {result}{short_desc}{suffix}".format(
                         prefix=stdout_context.line_prefix,
                         color=color,
                         header=header,
@@ -920,13 +932,7 @@ def _GenerateProgressStatusInfo(
                         short_desc=(
                             " ({})".format(task_data.short_desc) if task_data.short_desc else ""
                         ),
-                        suffix=(
-                            str(task_data.log_filename)
-                            if dm.capabilities.is_headless
-                            else "[link=file:///{}]View Log[/]".format(
-                                task_data.log_filename.as_posix(),
-                            )
-                        ),
+                        suffix=suffix,
                     ),
                     highlight=False,
                 )
@@ -1052,7 +1058,7 @@ def _GenerateNoopStatusInfo(
     ) -> None:
         on_task_complete_func(task_data)
 
-        if not quiet and task_data.result != 0:
+        if not quiet and task_data.result != 0 and task_data.log_filename.is_file():
             content = "{name}: {result}{short_desc} [{suffix}]\n".format(
                 name=task_data.display,
                 result=task_data.result,
@@ -1195,8 +1201,8 @@ def _YieldTemporaryDirectory(
 
     # ----------------------------------------------------------------------
     def OnExit():
-        # Remove the temp directory if everything worked as expected
-        if dm.result == 0:
+        # Remove the temp directory if everything worked as expected or there aren't any log files to view
+        if dm.result == 0 or not any(temp_directory.iterdir()):
             shutil.rmtree(temp_directory)
             return
 
