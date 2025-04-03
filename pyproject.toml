@@ -62,7 +62,7 @@ dev = [
 
 package = [
     "build ~= 1.2",
-    "twine ~= 5.1",
+    "twine ~= 6.1",
 ]
 
 [project.urls]
