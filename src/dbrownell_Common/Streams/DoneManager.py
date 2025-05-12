@@ -223,9 +223,7 @@ class Args:
     display_exception_details: bool = field(
         kw_only=True, default=False
     )  # Do not display exception details (such as the call stack)
-    suppress_exceptions: bool = field(
-        kw_only=False, default=False
-    )  # Do not let exceptions propagate
+    suppress_exceptions: bool = field(kw_only=False, default=False)  # Do not let exceptions propagate
 
     preserve_status: bool = field(kw_only=True, default=True)
 
@@ -237,9 +235,7 @@ class Args:
     def __post_init__(
         self,
         heading_param: str,
-        done_suffix_or_suffixes: (
-            None | Callable[[], Optional[str]] | list[Callable[[], Optional[str]]]
-        ),
+        done_suffix_or_suffixes: (None | Callable[[], Optional[str]] | list[Callable[[], Optional[str]]]),
     ) -> None:
         if done_suffix_or_suffixes is None:
             suffixes = []
@@ -595,9 +591,7 @@ class DoneManager:
         if self.is_verbose:
             stream = StreamDecorator(
                 self._stream,
-                line_prefix=TextwrapEx.CreateVerbosePrefix(
-                    Capabilities.Get(self._stream).supports_colors
-                ),
+                line_prefix=TextwrapEx.CreateVerbosePrefix(Capabilities.Get(self._stream).supports_colors),
                 decorate_empty_lines=True,
             )
         else:
@@ -627,9 +621,7 @@ class DoneManager:
         if self.is_debug:
             stream = StreamDecorator(
                 self._stream,
-                line_prefix=TextwrapEx.CreateDebugPrefix(
-                    Capabilities.Get(self._stream).supports_colors
-                ),
+                line_prefix=TextwrapEx.CreateDebugPrefix(Capabilities.Get(self._stream).supports_colors),
                 decorate_empty_lines=True,
             )
         else:
@@ -692,9 +684,7 @@ class DoneManager:
     # ----------------------------------------------------------------------
     def __post_init__(self):
         self._line_prefix = self._stream.GetCompleteLinePrefix(include_self=False)
-        self._status_line_prefix = self._line_prefix + self._stream.GetLinePrefix(
-            len(self._line_prefix)
-        )
+        self._status_line_prefix = self._line_prefix + self._stream.GetLinePrefix(len(self._line_prefix))
 
         complete_line_prefix = self._stream.GetCompleteLinePrefix(include_self=True)
         len_complete_line_prefix = len(complete_line_prefix)

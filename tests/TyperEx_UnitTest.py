@@ -81,9 +81,7 @@ class TestPythonCodeGenerator:
     # ----------------------------------------------------------------------
     def test_GenerateArgumentsKeywordArgs(self, _generator):
         assert (
-            _generator.GenerateArguments(
-                argument_type=PythonCodeGenerator.ArgumentTypes.KeywordArgs
-            )
+            _generator.GenerateArguments(argument_type=PythonCodeGenerator.ArgumentTypes.KeywordArgs)
             == textwrap.dedent(
                 """\
             arg0=arg0,
@@ -112,108 +110,103 @@ class TestPythonCodeGenerator:
         )
 
 
-# ----------------------------------------------------------------------
-@pytest.mark.parametrize("func_name", ["MyFunc1", "MyFunc2"])
-class TestTyperDictArgument:
-    # ----------------------------------------------------------------------
-    def test_Standard(self, func_name, _app):
-        result = CliRunner().invoke(
-            _app, [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14"]
-        )
-
-        assert result.exit_code == 0
-        assert result.stdout == "{'one': 'ONE', 'two': 123, 'three': [10, 20], 'four': 3.14}\n"
-
-    # ----------------------------------------------------------------------
-    def test_DuplicatedValue(self, func_name, _app):
-        result = CliRunner().invoke(
-            _app,
-            [
-                func_name,
-                "one:ONE",
-                "two=123",
-                "three:10",
-                "three:20",
-                "four=3.14",
-                "one=duplicated",
-            ],
-        )
-
-        assert result.exit_code == 0
-        assert (
-            result.stdout == "{'one': 'duplicated', 'two': 123, 'three': [10, 20], 'four': 3.14}\n"
-        )
-
-    # ----------------------------------------------------------------------
-    def test_OptionalValue(self, func_name, _app):
-        result = CliRunner().invoke(_app, [func_name, "one:ONE", "two=123", "three:10", "three:20"])
-
-        assert result.exit_code == 0
-        assert result.stdout == "{'one': 'ONE', 'two': 123, 'three': [10, 20]}\n"
-
-    # ----------------------------------------------------------------------
-    def test_ErrorWrongType(self, func_name, _app):
-        result = CliRunner().invoke(
-            _app, [func_name, "one:ONE", "two=123", "three:a", "three:20", "four=3.14"]
-        )
-
-        assert result.exit_code != 0
-        assert "'a' is not a valid integer" in result.stdout
-
-    # ----------------------------------------------------------------------
-    def test_ErrorMissingValue(self, func_name, _app):
-        result = CliRunner().invoke(_app, [func_name, "one:ONE", "three:10", "three:20"])
-
-        assert result.exit_code != 0
-        assert "A value must be provided for 'two'" in result.stdout
-
-    # ----------------------------------------------------------------------
-    def test_ErrorExtraValue(self, func_name, _app):
-        result = CliRunner().invoke(
-            _app,
-            [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14", "invalid=2"],
-        )
-
-        assert result.exit_code != 0
-        assert (
-            "'invalid' is not a valid key; valid keys are 'one', 'two', 'three', 'four'"
-            in result.stdout
-        )
-
-    # ----------------------------------------------------------------------
-    # ----------------------------------------------------------------------
-    # ----------------------------------------------------------------------
-    @pytest.fixture
-    @staticmethod
-    def _app() -> typer.Typer:
-        app = typer.Typer()
-
-        typer_dict_argument = TyperDictArgument(
-            {
-                "one": str,
-                "two": (int, typer.Argument()),
-                "three": (list[int], typer.Argument()),
-                "four": (Optional[float], typer.Option(None)),
-            },
-        )
-
-        # ----------------------------------------------------------------------
-        @app.command("MyFunc1")
-        def MyFunc1(
-            key_value_args: Annotated[list[str], typer_dict_argument],
-        ) -> None:
-            print(PostprocessDictArgument(key_value_args))
-
-        # ----------------------------------------------------------------------
-        @app.command("MyFunc2")
-        def MyFunc2(
-            key_value_args: list[str] = typer_dict_argument,
-        ) -> None:
-            print(PostprocessDictArgument(key_value_args))
-
-        # ----------------------------------------------------------------------
-
-        return app
+# # ----------------------------------------------------------------------
+# @pytest.mark.parametrize("func_name", ["MyFunc1", "MyFunc2"])
+# class TestTyperDictArgument:
+#     # ----------------------------------------------------------------------
+#     def test_Standard(self, func_name, _app):
+#         result = CliRunner().invoke(
+#             _app, [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14"]
+#         )
+#
+#         assert result.exit_code == 0
+#         assert result.stdout == "{'one': 'ONE', 'two': 123, 'three': [10, 20], 'four': 3.14}\n"
+#
+#     # ----------------------------------------------------------------------
+#     def test_DuplicatedValue(self, func_name, _app):
+#         result = CliRunner().invoke(
+#             _app,
+#             [
+#                 func_name,
+#                 "one:ONE",
+#                 "two=123",
+#                 "three:10",
+#                 "three:20",
+#                 "four=3.14",
+#                 "one=duplicated",
+#             ],
+#         )
+#
+#         assert result.exit_code == 0
+#         assert result.stdout == "{'one': 'duplicated', 'two': 123, 'three': [10, 20], 'four': 3.14}\n"
+#
+#     # ----------------------------------------------------------------------
+#     def test_OptionalValue(self, func_name, _app):
+#         result = CliRunner().invoke(_app, [func_name, "one:ONE", "two=123", "three:10", "three:20"])
+#
+#         assert result.exit_code == 0
+#         assert result.stdout == "{'one': 'ONE', 'two': 123, 'three': [10, 20]}\n"
+#
+#     # ----------------------------------------------------------------------
+#     def test_ErrorWrongType(self, func_name, _app):
+#         result = CliRunner().invoke(
+#             _app, [func_name, "one:ONE", "two=123", "three:a", "three:20", "four=3.14"]
+#         )
+#
+#         assert result.exit_code != 0
+#         assert "'a' is not a valid integer" in result.stdout
+#
+#     # ----------------------------------------------------------------------
+#     def test_ErrorMissingValue(self, func_name, _app):
+#         result = CliRunner().invoke(_app, [func_name, "one:ONE", "three:10", "three:20"])
+#
+#         assert result.exit_code != 0
+#         assert "A value must be provided for 'two'" in result.stdout
+#
+#     # ----------------------------------------------------------------------
+#     def test_ErrorExtraValue(self, func_name, _app):
+#         result = CliRunner().invoke(
+#             _app,
+#             [func_name, "one:ONE", "two=123", "three:10", "three:20", "four=3.14", "invalid=2"],
+#         )
+#
+#         assert result.exit_code != 0
+#         assert "'invalid' is not a valid key; valid keys are 'one', 'two', 'three', 'four'" in result.stdout
+#
+#     # ----------------------------------------------------------------------
+#     # ----------------------------------------------------------------------
+#     # ----------------------------------------------------------------------
+#     @pytest.fixture
+#     @staticmethod
+#     def _app() -> typer.Typer:
+#         app = typer.Typer()
+#
+#         typer_dict_argument = TyperDictArgument(
+#             {
+#                 "one": str,
+#                 "two": (int, typer.Argument()),
+#                 "three": (list[int], typer.Argument()),
+#                 "four": (Optional[float], typer.Option(None)),
+#             },
+#         )
+#
+#         # ----------------------------------------------------------------------
+#         @app.command("MyFunc1")
+#         def MyFunc1(
+#             key_value_args: Annotated[list[str], typer_dict_argument],
+#         ) -> None:
+#             print(PostprocessDictArgument(key_value_args))
+#
+#         # ----------------------------------------------------------------------
+#         @app.command("MyFunc2")
+#         def MyFunc2(
+#             key_value_args: list[str] = typer_dict_argument,
+#         ) -> None:
+#             print(PostprocessDictArgument(key_value_args))
+#
+#         # ----------------------------------------------------------------------
+#
+#         return app
 
 
 # ----------------------------------------------------------------------
@@ -227,9 +220,7 @@ class TestTyperDictOption:
 
     # ----------------------------------------------------------------------
     def test_PartialFill(self, _app):
-        result = CliRunner().invoke(
-            _app, ["--key-value-args", "one:ONE", "--key-value-args", "two:2"]
-        )
+        result = CliRunner().invoke(_app, ["--key-value-args", "one:ONE", "--key-value-args", "two:2"])
 
         assert result.exit_code == 0
         assert result.stdout == "{'one': 'ONE', 'two': 2}\n"

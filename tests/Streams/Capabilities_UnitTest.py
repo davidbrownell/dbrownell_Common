@@ -110,6 +110,6 @@ def test_Compare():
     assert Capabilities(ignore_environment=True) != Capabilities(is_headless=False)
     assert Capabilities(ignore_environment=True) < Capabilities(is_headless=False)
     assert Capabilities(is_headless=False) > Capabilities(ignore_environment=True)
-    assert Capabilities(
-        is_headless=False, is_interactive=True, supports_colors=False
-    ) < Capabilities(is_headless=False, is_interactive=True, supports_colors=True)
+    assert Capabilities(is_headless=False, is_interactive=True, supports_colors=False) < Capabilities(
+        is_headless=False, is_interactive=True, supports_colors=True
+    )

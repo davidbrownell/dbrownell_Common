@@ -303,9 +303,7 @@ class StreamDecorator(TextWriter):
                     "ignore",
                 ]:
                     try:
-                        decoded_content = content.encode("utf-8").decode(
-                            "ascii", decode_error_method
-                        )
+                        decoded_content = content.encode("utf-8").decode("ascii", decode_error_method)
                         stream.write(decoded_content)
 
                         wrote_content = True

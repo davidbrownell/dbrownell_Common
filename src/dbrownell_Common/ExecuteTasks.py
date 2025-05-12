@@ -490,9 +490,7 @@ def YieldQueueExecutor(
                             def Init(  # pylint: disable=unused-argument
                                 *args,
                                 **kwargs,
-                            ) -> tuple[
-                                Path, ExecuteTasksTypes.PrepareFuncType
-                            ]:  # pylint: disable=unused-argument
+                            ) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:  # pylint: disable=unused-argument
                                 # ----------------------------------------------------------------------
                                 def Prepare(
                                     on_simple_status_func: Callable[[str], None],
@@ -503,9 +501,7 @@ def YieldQueueExecutor(
                                     prepare_result = prepare_func(on_simple_status_func)
 
                                     num_steps: Optional[int] = None
-                                    execute_func: Optional[
-                                        YieldQueueExecutorTypes.ExecuteFuncType
-                                    ] = None
+                                    execute_func: Optional[YieldQueueExecutorTypes.ExecuteFuncType] = None
 
                                     if isinstance(prepare_result, tuple):
                                         num_steps, execute_func = prepare_result
@@ -547,9 +543,7 @@ def YieldQueueExecutor(
             with ThreadPoolExecutor(
                 max_workers=num_threads,
             ) as executor:
-                futures = [
-                    executor.submit(Impl, thread_index) for thread_index in range(num_threads)
-                ]
+                futures = [executor.submit(Impl, thread_index) for thread_index in range(num_threads)]
 
                 yield Enqueue
 
@@ -672,11 +666,7 @@ def _GenerateStatusInfo(
 
         # ----------------------------------------------------------------------
 
-        with (
-            _GenerateProgressStatusInfo
-            if dm.capabilities.is_interactive
-            else _GenerateNoopStatusInfo
-        )(
+        with (_GenerateProgressStatusInfo if dm.capabilities.is_interactive else _GenerateNoopStatusInfo)(
             num_tasks_display_value,
             execute_dm,
             tasks,
@@ -710,9 +700,9 @@ def _GenerateProgressStatusInfo(
         # rather than referencing `sys.stdout` directly, but it is really hard to work with mocked
         # stream as mocks will create mocks for everything called on the mock. Use sys.stdout
         # directly to avoid that particular problem.
-        assert stdout_context.stream is sys.stdout or isinstance(
-            stdout_context.stream, MagicMock
-        ), stdout_context.stream
+        assert stdout_context.stream is sys.stdout or isinstance(stdout_context.stream, MagicMock), (
+            stdout_context.stream
+        )
 
         progress_bar = Progress(
             *Progress.get_default_columns(),
@@ -822,14 +812,10 @@ def _GenerateProgressStatusInfo(
                     if not dm.is_verbose:
                         return
 
-                    assert (
-                        TextwrapEx.VERBOSE_COLOR_ON == "\033[;7m"
-                    ), "Ensure that the colors stay in sync"
+                    assert TextwrapEx.VERBOSE_COLOR_ON == "\033[;7m", "Ensure that the colors stay in sync"
                     prefix = "[black on white]VERBOSE:[/] "
                 else:
-                    assert (
-                        TextwrapEx.INFO_COLOR_ON == "\033[;7m"
-                    ), "Ensure that the colors stay in sync"
+                    assert TextwrapEx.INFO_COLOR_ON == "\033[;7m", "Ensure that the colors stay in sync"
                     prefix = "[black on white]INFO:[/] "
 
                 progress_bar.print(
@@ -889,7 +875,7 @@ def _GenerateProgressStatusInfo(
             ),
             status="",
             total=num_tasks_display_value,
-            visible=not num_tasks_display_value is None,
+            visible=num_tasks_display_value is not None,
         )
 
         # ----------------------------------------------------------------------
@@ -898,15 +884,11 @@ def _GenerateProgressStatusInfo(
         ) -> None:
             if not quiet and task_data.result != 0:
                 if task_data.result < 0:
-                    assert (
-                        TextwrapEx.ERROR_COLOR_ON == "\033[31;1m"
-                    ), "Ensure that the colors stay in sync"
+                    assert TextwrapEx.ERROR_COLOR_ON == "\033[31;1m", "Ensure that the colors stay in sync"
                     color = "red"
                     header = "ERROR"
                 else:
-                    assert (
-                        TextwrapEx.WARNING_COLOR_ON == "\033[33;1m"
-                    ), "Ensure that the colors stay in sync"
+                    assert TextwrapEx.WARNING_COLOR_ON == "\033[33;1m", "Ensure that the colors stay in sync"
                     color = "yellow"
                     header = "WARNING"
 
@@ -916,9 +898,7 @@ def _GenerateProgressStatusInfo(
                     if dm.capabilities.is_headless:
                         suffix = str(task_data.log_filename)
                     else:
-                        suffix = "[link=file:///{}]View Log[/]".format(
-                            task_data.log_filename.as_posix()
-                        )
+                        suffix = "[link=file:///{}]View Log[/]".format(task_data.log_filename.as_posix())
 
                     suffix = r" \[{}]".format(suffix)
 
@@ -929,9 +909,7 @@ def _GenerateProgressStatusInfo(
                         header=header,
                         name=task_data.display,
                         result=task_data.result,
-                        short_desc=(
-                            " ({})".format(task_data.short_desc) if task_data.short_desc else ""
-                        ),
+                        short_desc=(" ({})".format(task_data.short_desc) if task_data.short_desc else ""),
                         suffix=suffix,
                     ),
                     highlight=False,
@@ -1286,7 +1264,8 @@ def _TransformCompressed(
 
                     # ----------------------------------------------------------------------
                     def Init(
-                        *args, **kwargs  # pylint: disable=unused-argument
+                        *args,
+                        **kwargs,  # pylint: disable=unused-argument
                     ) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
                         # ----------------------------------------------------------------------
                         def Prepare(

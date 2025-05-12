@@ -59,7 +59,6 @@
 # `pytest tests/dbrownell_Common/ExecuteTasks_TestManual.py -vv --capture=no --cov=dbrownell_Common.ExecuteTasks --cov-report=lcov:tests\dbrownell_Common\lcov.info`
 #
 
-
 import multiprocessing
 import sys
 import time
@@ -232,7 +231,7 @@ def _ExecuteTasks(
     def Init(context: Any) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
         # ----------------------------------------------------------------------
         def Prepare(
-            on_simple_status_func: Callable[[str], None]
+            on_simple_status_func: Callable[[str], None],
         ) -> ExecuteTasksTypes.ExecuteFuncType | tuple[int, ExecuteTasksTypes.ExecuteFuncType]:
             # ----------------------------------------------------------------------
             def Execute(status: Status) -> int:
