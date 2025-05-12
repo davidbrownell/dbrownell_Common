@@ -414,35 +414,27 @@ def test_SuppressExceptionsNoDisplayExceptions():
         Exception,
         match=re.escape("Exceptions should not be suppressed when they are not displayed."),
     ):
-        with DoneManager.Create(
-            StringIO(), "Testing", display_exceptions=False, suppress_exceptions=True
-        ):
+        with DoneManager.Create(StringIO(), "Testing", display_exceptions=False, suppress_exceptions=True):
             pass
 
 
 # ----------------------------------------------------------------------
 def test_StandardFlags():
-    with DoneManager.Create(
-        _CreateSink(), "Testing", flags=Flags.Create(verbose=False, debug=False)
-    ) as dm:
+    with DoneManager.Create(_CreateSink(), "Testing", flags=Flags.Create(verbose=False, debug=False)) as dm:
         assert dm.is_verbose is False
         assert dm.is_debug is False
 
 
 # ----------------------------------------------------------------------
 def test_VerboseFlags():
-    with DoneManager.Create(
-        _CreateSink(), "Testing", flags=Flags.Create(verbose=True, debug=False)
-    ) as dm:
+    with DoneManager.Create(_CreateSink(), "Testing", flags=Flags.Create(verbose=True, debug=False)) as dm:
         assert dm.is_verbose is True
         assert dm.is_debug is False
 
 
 # ----------------------------------------------------------------------
 def test_DebugFlags():
-    with DoneManager.Create(
-        _CreateSink(), "Testing", flags=Flags.Create(verbose=False, debug=True)
-    ) as dm:
+    with DoneManager.Create(_CreateSink(), "Testing", flags=Flags.Create(verbose=False, debug=True)) as dm:
         assert dm.is_verbose is True
         assert dm.is_debug is True
 
@@ -506,18 +498,15 @@ def test_WriteSuccessWithColor():
     with DoneManager.Create(sink, "Testing") as dm:
         dm.WriteSuccess("Line 1")
 
-    assert (
-        _Scrub(sink.getvalue())
-        == textwrap.dedent(
-            """\
+    assert _Scrub(sink.getvalue()) == textwrap.dedent(
+        """\
         Testing...
           {color_on}SUCCESS:{color_off} Line 1
         DONE! ({color_on}0{color_off}, <Scrubbed Time>)
         """,
-        ).format(
-            color_on=TextwrapEx.SUCCESS_COLOR_ON,
-            color_off=TextwrapEx.COLOR_OFF,
-        )
+    ).format(
+        color_on=TextwrapEx.SUCCESS_COLOR_ON,
+        color_off=TextwrapEx.COLOR_OFF,
     )
 
 
@@ -544,18 +533,15 @@ def test_WriteErrorWithColor():
     with DoneManager.Create(sink, "Testing") as dm:
         dm.WriteError("Line 1")
 
-    assert (
-        _Scrub(sink.getvalue())
-        == textwrap.dedent(
-            """\
+    assert _Scrub(sink.getvalue()) == textwrap.dedent(
+        """\
         Testing...
           {color_on}ERROR:{color_off} Line 1
         DONE! ({color_on}-1{color_off}, <Scrubbed Time>)
         """,
-        ).format(
-            color_on=TextwrapEx.ERROR_COLOR_ON,
-            color_off=TextwrapEx.COLOR_OFF,
-        )
+    ).format(
+        color_on=TextwrapEx.ERROR_COLOR_ON,
+        color_off=TextwrapEx.COLOR_OFF,
     )
 
 
@@ -582,18 +568,15 @@ def test_WriteWarningWithColor():
     with DoneManager.Create(sink, "Testing") as dm:
         dm.WriteWarning("Line 1")
 
-    assert (
-        _Scrub(sink.getvalue())
-        == textwrap.dedent(
-            """\
+    assert _Scrub(sink.getvalue()) == textwrap.dedent(
+        """\
         Testing...
           {color_on}WARNING:{color_off} Line 1
         DONE! ({color_on}1{color_off}, <Scrubbed Time>)
         """,
-        ).format(
-            color_on=TextwrapEx.WARNING_COLOR_ON,
-            color_off=TextwrapEx.COLOR_OFF,
-        )
+    ).format(
+        color_on=TextwrapEx.WARNING_COLOR_ON,
+        color_off=TextwrapEx.COLOR_OFF,
     )
 
 
@@ -620,19 +603,16 @@ def test_WriteInfoWithColor():
     with DoneManager.Create(sink, "Testing") as dm:
         dm.WriteInfo("Line 1")
 
-    assert (
-        _Scrub(sink.getvalue())
-        == textwrap.dedent(
-            """\
+    assert _Scrub(sink.getvalue()) == textwrap.dedent(
+        """\
         Testing...
           {info_color_on}INFO:{color_off} Line 1
         DONE! ({success_color_on}0{color_off}, <Scrubbed Time>)
         """,
-        ).format(
-            info_color_on=TextwrapEx.INFO_COLOR_ON,
-            success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
-            color_off=TextwrapEx.COLOR_OFF,
-        )
+    ).format(
+        info_color_on=TextwrapEx.INFO_COLOR_ON,
+        success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
+        color_off=TextwrapEx.COLOR_OFF,
     )
 
 
@@ -666,19 +646,16 @@ def WriteVerbose():
     with DoneManager.Create(sink, "Testing", flags=Flags.Create(verbose=True)) as dm:
         dm.WriteVerbose("Line 1")
 
-    assert (
-        _Scrub(sink.getvalue())
-        == textwrap.dedent(
-            """\
+    assert _Scrub(sink.getvalue()) == textwrap.dedent(
+        """\
         Testing...
           {verbose_color_on}VERBOSE:{color_off} Line 1
         DONE! ({success_color_on}0{color_off}, <Scrubbed Time>)
         """,
-        ).format(
-            verbose_color_on=TextwrapEx.VERBOSE_COLOR_ON,
-            success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
-            color_off=TextwrapEx.COLOR_OFF,
-        )
+    ).format(
+        verbose_color_on=TextwrapEx.VERBOSE_COLOR_ON,
+        success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
+        color_off=TextwrapEx.COLOR_OFF,
     )
 
 
@@ -712,19 +689,16 @@ def test_WriteDebug():
     with DoneManager.Create(sink, "Testing", flags=Flags.Create(debug=True)) as dm:
         dm.WriteDebug("Line 1")
 
-    assert (
-        _Scrub(sink.getvalue())
-        == textwrap.dedent(
-            """\
+    assert _Scrub(sink.getvalue()) == textwrap.dedent(
+        """\
         Testing...
           {debug_color_on}DEBUG:{color_off} Line 1
         DONE! ({success_color_on}0{color_off}, <Scrubbed Time>)
         """,
-        ).format(
-            debug_color_on=TextwrapEx.DEBUG_COLOR_ON,
-            success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
-            color_off=TextwrapEx.COLOR_OFF,
-        )
+    ).format(
+        debug_color_on=TextwrapEx.DEBUG_COLOR_ON,
+        success_color_on=TextwrapEx.SUCCESS_COLOR_ON,
+        color_off=TextwrapEx.COLOR_OFF,
     )
 
 
@@ -1133,9 +1107,7 @@ class TestWriteStatus:
 
         with DoneManager.Create(stream, "Testing") as dm:
             dm.WriteStatus("Short 1\nShort 2")
-            dm.WriteStatus(
-                "This is longer status 1\nThis is longer status 2\nThis is longer status 3"
-            )
+            dm.WriteStatus("This is longer status 1\nThis is longer status 2\nThis is longer status 3")
             dm.WriteStatus("Again 1")
 
         stream.content[-1] = _Scrub(cast(str, stream.content[-1]))

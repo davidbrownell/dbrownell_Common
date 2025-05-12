@@ -458,9 +458,7 @@ def ResolveTypeDefinitions(
 
         assert type_definition_item is not None
 
-        if force_optional and not isinstance(
-            type_definition_item.parameter_info, typer.models.OptionInfo
-        ):
+        if force_optional and not isinstance(type_definition_item.parameter_info, typer.models.OptionInfo):
             raise Exception("Optional types must be defined as typer.Option instances.")
 
         return type_definition_item

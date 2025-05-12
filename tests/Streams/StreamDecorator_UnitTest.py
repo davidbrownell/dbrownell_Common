@@ -324,9 +324,7 @@ def test_MultipleStreams():
 def test_GetLinePrefix():
     assert StreamDecorator(FakeStream(123)).GetLinePrefix(0) == ""
     assert (
-        StreamDecorator(
-            FakeStream(123), line_prefix=lambda x: "__prefix__({})".format(x)
-        ).GetLinePrefix(0)
+        StreamDecorator(FakeStream(123), line_prefix=lambda x: "__prefix__({})".format(x)).GetLinePrefix(0)
         == "__prefix__(0)"
     )
 

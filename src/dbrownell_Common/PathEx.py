@@ -159,10 +159,7 @@ def GetCommonPath(
             break
 
         for path in paths[1:]:
-            if (
-                part_index > len(path.parts) - 1
-                or path.parts[part_index] != paths[0].parts[part_index]
-            ):
+            if part_index > len(path.parts) - 1 or path.parts[part_index] != paths[0].parts[part_index]:
                 is_match = False
                 break
 

@@ -138,17 +138,14 @@ def test_TransformTasks(no_compress_tasks):
     for index, result in enumerate(results):
         assert result == index * 2
 
-    assert (
-        _Scrub(sink.getvalue())
-        == textwrap.dedent(
-            """\
+    assert _Scrub(sink.getvalue()) == textwrap.dedent(
+        """\
         Transforming tasks...
           Tasks ({num_tasks} items)...DONE! (0, <Scrubbed Time>, {num_tasks} items succeeded, no items with errors, no items with warnings)
         DONE! (0, <Scrubbed Time>)
         """,
-        ).format(
-            num_tasks=num_tasks,
-        )
+    ).format(
+        num_tasks=num_tasks,
     )
 
 
@@ -266,9 +263,7 @@ def _ExecuteTasks(
     # ----------------------------------------------------------------------
     def Init(context: Any) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
         # ----------------------------------------------------------------------
-        def Prepare(
-            on_simple_status_func: Callable[[str], None]
-        ) -> ExecuteTasksTypes.ExecuteFuncType:
+        def Prepare(on_simple_status_func: Callable[[str], None]) -> ExecuteTasksTypes.ExecuteFuncType:
             # ----------------------------------------------------------------------
             def Execute(status: Status) -> int:
                 result, return_code = execute_func(context)

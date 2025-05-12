@@ -119,9 +119,7 @@ class Capabilities:
             explicit_supports_colors = True
         else:
             value = (
-                os.getenv(self.__class__.SIMULATE_TERMINAL_COLORS_ENV_VAR)
-                if not ignore_environment
-                else None
+                os.getenv(self.__class__.SIMULATE_TERMINAL_COLORS_ENV_VAR) if not ignore_environment else None
             )
             if value is not None:
                 supports_colors = value != "0"
@@ -286,9 +284,7 @@ class Capabilities:
             columns=columns if columns is not None else self.columns,
             is_headless=is_headless if is_headless is not None else self.is_headless,
             is_interactive=is_interactive if is_interactive is not None else self.is_interactive,
-            supports_colors=(
-                supports_colors if supports_colors is not None else self.supports_colors
-            ),
+            supports_colors=(supports_colors if supports_colors is not None else self.supports_colors),
         )
 
     # ----------------------------------------------------------------------

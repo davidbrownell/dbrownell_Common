@@ -44,7 +44,7 @@ def extension(func):  # pylint: disable=invalid-name
 
 
 # ----------------------------------------------------------------------
-if sys.version_info[0] > 3 or sys.version_info[1] >= 12:
+if sys.version_info[0] > 3 and sys.version_info[1] >= 12:
     from typing import override as override_impl
 
     override = override_impl
