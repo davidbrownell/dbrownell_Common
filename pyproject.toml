@@ -57,7 +57,7 @@ dev = [
 path = "src/dbrownell_Common/__init__.py"
 
 [tool.pytest.ini_options]
-addopts = "--verbose -vv --capture=no --cov=dbrownell_Common --cov-fail-under=84.0"
+addopts = "--verbose -vv --capture=no --cov=dbrownell_Common --cov-report term --cov-report xml:coverage.xml --cov-fail-under=84.0"
 python_files = [
     "**/*Test.py",
 ]

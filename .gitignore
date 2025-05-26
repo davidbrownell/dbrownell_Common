@@ -16,6 +16,7 @@ build/**
 dist/**
 src/dbrownell_Common.egg-info/**
 
+coverage.xml
 minisign_key.pri
 .DS_Store
 post_generation_instructions.html
