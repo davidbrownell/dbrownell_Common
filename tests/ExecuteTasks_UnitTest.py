@@ -40,31 +40,19 @@
 # `ExecuteTasks_UnitTest.py`
 # --------------------------
 #
-# Standard:
-# `python Build.py Test`
-#
-# Code Coverage:
-# `python Build.py Test --code-coverage`
+# `uv run pytest`
 #
 # `ExecuteTasks_TestManual.py`
 # ----------------------------
 #
-# Standard:
-# `pytest tests/dbrownell_Common/ExecuteTasks_TestManual.py -vv --capture=no`
-#
-# Code Coverage:
-# `pytest tests/dbrownell_Common/ExecuteTasks_TestManual.py -vv --capture=no --cov=dbrownell_Common.ExecuteTasks`
-#
-# Code Coverage with lcov output:
-# `pytest tests/dbrownell_Common/ExecuteTasks_TestManual.py -vv --capture=no --cov=dbrownell_Common.ExecuteTasks --cov-report=lcov:tests\dbrownell_Common\lcov.info`
-#
+# `uv run pytest tests/ExecuteTasks_TestManual.py --no-cov`
 
 import re
 import textwrap
 
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable, cast
+from typing import Any, Callable, cast, Optional
 
 import pytest
 
@@ -150,10 +138,10 @@ def test_TransformTasks(no_compress_tasks):
 
 
 # ----------------------------------------------------------------------
-def test_YieldQueueExecutor():
+def test_YieldQueueExecutor() -> None:
     sink = _CreateSink()
 
-    results = [
+    results: list[Optional[int]] = [
         None,
     ] * 10
 
@@ -177,6 +165,9 @@ def test_YieldQueueExecutor():
                 # ----------------------------------------------------------------------
 
                 executor(str(index), Prepare)
+
+    sink = sink.getvalue()
+    assert dm.result == 0, (dm.result, sink)
 
     for index, result in enumerate(results):
         assert result == index

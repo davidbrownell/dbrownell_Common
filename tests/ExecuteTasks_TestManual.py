@@ -1,18 +1,3 @@
-# ----------------------------------------------------------------------
-# |
-# |  ExecuteTasks_TestManual.py
-# |
-# |  David Brownell <db@DavidBrownell.com>
-# |      2024-01-13 20:50:28
-# |
-# ----------------------------------------------------------------------
-# |
-# |  Copyright David Brownell 2024
-# |  Distributed under the MIT License.
-# |
-# ----------------------------------------------------------------------
-"""Manual tests for ExecuteTasks.py."""
-
 # Testing Challenges
 # ==================
 # `ExecuteTasks.py` has proven to be very difficult to test for a couple of reasons:
@@ -40,205 +25,532 @@
 # `ExecuteTasks_UnitTest.py`
 # --------------------------
 #
-# Standard:
-# `python Build.py Test`
-#
-# Code Coverage:
-# `python Build.py Test --code-coverage`
+# `uv run pytest`
 #
 # `ExecuteTasks_TestManual.py`
 # ----------------------------
 #
-# Standard:
-# `pytest tests/dbrownell_Common/ExecuteTasks_TestManual.py -vv --capture=no`
-#
-# Code Coverage:
-# `pytest tests/dbrownell_Common/ExecuteTasks_TestManual.py -vv --capture=no --cov=dbrownell_Common.ExecuteTasks`
-#
-# Code Coverage with lcov output:
-# `pytest tests/dbrownell_Common/ExecuteTasks_TestManual.py -vv --capture=no --cov=dbrownell_Common.ExecuteTasks --cov-report=lcov:tests\dbrownell_Common\lcov.info`
-#
+# `uv run pytest tests/ExecuteTasks_TestManual.py --no-cov`
 
-import multiprocessing
 import sys
-import time
-
-from io import StringIO
-from pathlib import Path
-from typing import Any, Callable, cast
 
 import pytest
 
 from dbrownell_Common.ExecuteTasks import *
-from dbrownell_Common import PathEx
-from dbrownell_Common.Streams.DoneManager import DoneManager, Flags
+from dbrownell_Common.Streams.DoneManager import DoneManager, Flags as DoneManagerFlags
 
 
 # ----------------------------------------------------------------------
-@pytest.mark.parametrize("is_interactive", [True, False])
-def test_Standard(is_interactive):
-    sys.stdout.write("\n")
-
-    if is_interactive:
-        stream = sys.stdout
-    else:
-        stream = StringIO()
-
-    num_tasks = int(multiprocessing.cpu_count() * 1.5)
-    num_steps = 20
-
-    with DoneManager.Create(
-        stream,
-        "Executing tasks",
-        flags=Flags.Create(verbose=True),
-    ) as dm:
-        # ----------------------------------------------------------------------
-        def Execute(context, status):
-            for x in range(num_steps):
-                status.OnProgress(x, "Iteration {}".format(x))
-                status.SetTitle("{}.{}".format(context, x))
-
-                time.sleep(0.25)
-
-            if context % 5 == 0:
-                status.OnInfo("{} is a multiple of 5".format(context))
-                return context * 2, 0
-
-            if context & 1:
-                status.OnInfo("{} is odd".format(context), verbose=True)
-                return context * 2, 1
-
-            return context * 2, -1
-
-        # ----------------------------------------------------------------------
-
-        results = _ExecuteTasks(
-            dm,
-            Execute,
-            num_tasks=num_tasks,
-            num_steps=num_steps,
-        )
-
-    for index, result in enumerate(results):
-        assert result == index * 2
-
-    sys.stdout.write("\n")
-
-
-# ----------------------------------------------------------------------
-def test_SingleThread():
-    sys.stdout.write("\n")
-
-    num_tasks = 5
-    num_steps = 10
-
-    with DoneManager.Create(sys.stdout, "Executing tasks...") as dm:
-        # ----------------------------------------------------------------------
-        def Execute(context, status):
-            for x in range(num_steps):
-                status.OnProgress(x, "Iteration {}".format(x))
-                time.sleep(0.25)
-
-            return context * 2, 0
-
-        # ----------------------------------------------------------------------
-
-        results = _ExecuteTasks(
-            dm,
-            Execute,
-            num_tasks=num_tasks,
-            num_steps=num_steps,
-            max_num_threads=1,
-        )
-
-    for index, result in enumerate(results):
-        assert result == index * 2
-
-    sys.stdout.write("\n")
-
-
-# ----------------------------------------------------------------------
-def test_YieldQueueExecutor():
-    sys.stdout.write("\n")
-
-    num_tasks = int(multiprocessing.cpu_count() * 1.5)
-    num_steps = 20
-
-    results: list[Optional[int]] = [
-        None,
-    ] * num_tasks
-
-    with DoneManager.Create(sys.stdout, "Executing tasks...") as dm:
-        with YieldQueueExecutor(dm, "Queue") as executor:
-            for index in range(num_tasks):
-                # ----------------------------------------------------------------------
-                def Prepare(
-                    on_simple_status_func: Callable[[str], None],  # pylint: disable=unused-argument
-                    index=index,
-                ) -> tuple[int, YieldQueueExecutorTypes.ExecuteFuncType]:
-                    # ----------------------------------------------------------------------
-                    def Execute(status: Status) -> Optional[str]:
-                        for x in range(num_steps):
-                            status.OnProgress(x, "Iteration {}".format(x))
-                            time.sleep(0.25)
-
-                        results[index] = index * 2
-
-                    # ----------------------------------------------------------------------
-
-                    return num_steps, Execute
-
-                # ----------------------------------------------------------------------
-
-                executor(str(index), Prepare)
-
-    for index, result in enumerate(results):
-        assert result == index * 2
-
-    sys.stdout.write("\n")
-
-
-# ----------------------------------------------------------------------
-# |
-# |  Private Functions
-# |
-# ----------------------------------------------------------------------
-def _ExecuteTasks(
-    dm: DoneManager,
-    execute_func: Callable[
-        [int, Status],  # context
-        tuple[int, int],  # updated context, return code
-    ],
-    *,
-    num_tasks: int = 5,
-    num_steps: Optional[int] = None,
-    **execute_tasks_kwargs: Any,
-) -> list[int]:
-    task_data = [
-        TaskData(
-            str(value),
-            value,
+class TestExecuteTasks:
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("single_threaded", [False, True], ids=["multithreaded", "single_threaded"])
+    @pytest.mark.parametrize("experience_type", ["ProgressBar", "Simple"])
+    def test_Success(self, experience_type, single_threaded):
+        self.__class__._Execute(
+            experience_type,
+            lambda context: (0, f"{context} - done"),
+            15,
             None,
+            single_threaded=single_threaded,
         )
-        for value in range(num_tasks)
-    ]
-
-    results = [
-        None,
-    ] * len(task_data)
 
     # ----------------------------------------------------------------------
-    def Init(context: Any) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
+    @pytest.mark.parametrize("verbose", [False, True], ids=["not_verbose", "verbose"])
+    @pytest.mark.parametrize("single_threaded", [False, True], ids=["multithreaded", "single_threaded"])
+    @pytest.mark.parametrize("experience_type", ["ProgressBar", "Simple"])
+    def test_SuccessWithInfo(self, experience_type, single_threaded, verbose):
+        self.__class__._Execute(
+            experience_type,
+            lambda context: (0, f"{context} - done"),
+            15,
+            None,
+            single_threaded=single_threaded,
+            send_info=True,
+            verbose=verbose,
+        )
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("return_code", [-1, 1], ids=["Error", "Warning"])
+    @pytest.mark.parametrize("experience_type", ["ProgressBar", "Simple"])
+    def test_NotSuccess(self, experience_type, return_code):
+        self.__class__._Execute(
+            experience_type,
+            lambda context: (return_code, f"The result was {return_code}."),
+            num_steps=5,
+            num_tasks=2,
+        )
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("experience_type", ["ProgressBar", "Simple"])
+    def test_ErrorOnPrepare(self, experience_type):
+        assert (
+            self.__class__._Execute(
+                experience_type,
+                lambda context: (0, None),
+                num_steps=1,
+                num_tasks=1,
+                error_on_prepare=True,
+            )
+            == CATASTROPHIC_TASK_FAILURE_RESULT
+        )
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("experience_type", ["ProgressBar", "Simple"])
+    def test_ErrorOnInit(self, experience_type):
+        assert (
+            self.__class__._Execute(
+                experience_type,
+                lambda context: (0, None),
+                num_steps=1,
+                num_tasks=1,
+                error_on_init=True,
+            )
+            == CATASTROPHIC_TASK_FAILURE_RESULT
+        )
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("experience_type", ["ProgressBar", "Simple"])
+    def test_ErrorOnExecute(self, experience_type):
+        # ----------------------------------------------------------------------
+        def Execute(context: int) -> tuple[int, Optional[str]]:
+            raise Exception("Error on `Execute`")
+
+        # ----------------------------------------------------------------------
+
+        assert (
+            self.__class__._Execute(
+                experience_type,
+                Execute,
+                num_steps=1,
+                num_tasks=1,
+            )
+            == CATASTROPHIC_TASK_FAILURE_RESULT
+        )
+
+    # ----------------------------------------------------------------------
+    def test_ExecutionLock(self):
+        self.__class__._Execute(
+            "ProgressBar",
+            lambda context: (0, f"{context} - done"),
+            num_steps=10,
+            num_tasks=5,
+            execution_lock=threading.Lock(),
+        )
+
+    # ----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
+    # ----------------------------------------------------------------------
+    @staticmethod
+    def _Execute(
+        experience_type: str,
+        get_execute_result_func: Callable[[int], tuple[int, Optional[str]]],
+        num_steps: int,
+        num_tasks: Optional[int],
+        *,
+        single_threaded: bool = False,
+        verbose: bool = False,
+        send_info: bool = False,
+        error_on_init: bool = False,
+        error_on_prepare: bool = False,
+        execution_lock: Optional[threading.Lock] = None,
+    ) -> int:
+        experience_type_enum = ExperienceType[experience_type]
+        num_tasks = num_tasks or (3 if single_threaded else 10)
+
+        if single_threaded:
+            max_num_threads = 1
+        elif experience_type_enum == ExperienceType.ProgressBar:
+            max_num_threads = 7
+        else:
+            max_num_threads = None
+
+        # ----------------------------------------------------------------------
+        def Init(context: int) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
+            if error_on_init:
+                raise Exception("An exception during `Init`")
+
+            # ----------------------------------------------------------------------
+            def Execute(status: Status) -> tuple[int, Optional[str]]:
+                status.SetTitle(f"Testing {context}...")
+
+                if send_info:
+                    status.OnInfo(f"{context} has started")
+                    status.OnInfo(f"{context} has started and will execute {num_steps} steps.", verbose=True)
+
+                for x in range(num_steps):
+                    status.OnProgress(x, str(x))
+                    time.sleep(0.200)
+
+                return get_execute_result_func(context)
+
+            # ----------------------------------------------------------------------
+            def Prepare(
+                on_simple_status_func: Callable[[str], None],
+            ) -> tuple[int, ExecuteTasksTypes.ExecuteFuncType]:
+                if error_on_prepare:
+                    raise Exception("An exception during `Prepare`")
+
+                return num_steps, Execute
+
+            # ----------------------------------------------------------------------
+
+            return PathEx.CreateTempFileName(), Prepare
+
+        # ----------------------------------------------------------------------
+
+        sys.stdout.write("\n")
+        with DoneManager.Create(
+            sys.stdout,
+            "",
+            line_prefix="",
+            flags=DoneManagerFlags.Create(verbose=verbose),
+        ) as dm:
+            ExecuteTasks(
+                dm,
+                "Testing...",
+                [TaskData(str(x), x, execution_lock) for x in range(num_tasks)],
+                Init,
+                experience_type=experience_type_enum,
+                max_num_threads=max_num_threads,
+            )
+
+            return dm.result
+
+
+# ----------------------------------------------------------------------
+class TestTransformTasksEx:
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("single_threaded", [False, True], ids=["multithreaded", "single_threaded"])
+    @pytest.mark.parametrize("experience_type", ["ProgressBar", "Simple"])
+    def test_Success(self, experience_type, single_threaded):
+        assert self.__class__._Execute(
+            experience_type,
+            lambda context: context * 2,
+            10,
+            single_threaded=single_threaded,
+        ) == [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+    # ----------------------------------------------------------------------
+    def test_LimitedNumberOfThreads(self):
+        assert self.__class__._Execute(
+            None,
+            lambda context: context * 2,
+            10,
+            max_num_threads=5,
+        ) == [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("return_exceptions", [False, True])
+    def test_ReturnExceptions(self, return_exceptions):
+        # ----------------------------------------------------------------------
+        def Transform(context: int) -> int:
+            raise Exception(f"Error on {context}")
+
+        # ----------------------------------------------------------------------
+
+        result = self.__class__._Execute(
+            None,
+            Transform,
+            5,
+            return_exceptions=return_exceptions,
+            expected_result=-1 if return_exceptions else CATASTROPHIC_TASK_FAILURE_RESULT,
+        )
+
+        if return_exceptions:
+            assert len(result) == 5
+
+            for x, result in enumerate(result):
+                assert isinstance(result, Exception)
+                assert str(result) == f"Error on {x}"
+        else:
+            assert result == [None, None, None, None, None]
+
+    # ----------------------------------------------------------------------
+    def test_CompleteTransformResult(self):
+        result = self.__class__._Execute(
+            None,
+            lambda context: CompleteTransformResult(
+                context * 2,
+                12345,
+                f"This will be displayed as a warning ({context})",
+            ),
+            5,
+            expected_result=12345,
+        )
+
+        assert result == [0, 2, 4, 6, 8]
+
+    # ----------------------------------------------------------------------
+    def test_ManyTasks(self):
+        # ----------------------------------------------------------------------
+        def Transform(context: int) -> int:
+            time.sleep(0.2)
+            return context * 2
+
+        # ----------------------------------------------------------------------
+
+        num_tasks = multiprocessing.cpu_count() * 3
+
+        result = self.__class__._Execute(None, Transform, num_tasks)
+
+        assert result == [x * 2 for x in range(num_tasks)]
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("return_exceptions", [False, True])
+    def test_ManyTasksReturnExceptions(self, return_exceptions):
+        # ----------------------------------------------------------------------
+        def Transform(context: int) -> int:
+            raise Exception(f"Error on {context}")
+
+        # ----------------------------------------------------------------------
+
+        num_tasks = multiprocessing.cpu_count() * 3
+
+        result = self.__class__._Execute(
+            None,
+            Transform,
+            num_tasks,
+            return_exceptions=return_exceptions,
+            expected_result=-1 if return_exceptions else CATASTROPHIC_TASK_FAILURE_RESULT,
+        )
+
+        if return_exceptions:
+            assert len(result) == num_tasks
+
+            for x, result in enumerate(result):
+                assert isinstance(result, Exception)
+                assert str(result) == f"Error on {x}"
+        else:
+            assert result == [None] * num_tasks
+
+    # ----------------------------------------------------------------------
+    def test_ManyTasksCompleteTransformResult(self):
+        # ----------------------------------------------------------------------
+        def Transform(context: int) -> CompleteTransformResult:
+            return CompleteTransformResult(
+                context * 2,
+                12345,
+                f"This will be displayed as a warning ({context})",
+            )
+
+        # ----------------------------------------------------------------------
+
+        num_tasks = multiprocessing.cpu_count() * 3
+
+        result = self.__class__._Execute(
+            None,
+            Transform,
+            num_tasks,
+            expected_result=12345,
+        )
+
+        assert result == [x * 2 for x in range(num_tasks)]
+
+    # ----------------------------------------------------------------------
+    @staticmethod
+    def _Execute(
+        experience_type: Optional[str],
+        transform_func: Callable[[int], Union[int, CompleteTransformResult]],
+        num_tasks: int,
+        num_steps: int = 1,
+        *,
+        single_threaded: bool = False,
+        verbose: bool = False,
+        no_compress_tasks: bool = False,
+        return_exceptions: bool = False,
+        expected_result: int = 0,
+        max_num_threads: Optional[int] = None,
+    ) -> list[Union[None, object, Exception]]:
+        experience_type_enum = None if experience_type is None else ExperienceType[experience_type]
+
+        if max_num_threads is None:
+            if single_threaded:
+                max_num_threads = 1
+            elif experience_type_enum == ExperienceType.ProgressBar:
+                max_num_threads = 7
+
+        # ----------------------------------------------------------------------
+        def Prepare(
+            context: int,
+            on_simple_status_func: Callable[[str], None],
+        ) -> Union[
+            tuple[int, TransformTasksExTypes.TransformFuncType],
+            TransformTasksExTypes.TransformFuncType,
+        ]:
+            # ----------------------------------------------------------------------
+            def Execute(status: Status) -> Union[int, CompleteTransformResult]:
+                for x in range(num_steps):
+                    if num_steps != 1:
+                        status.OnProgress(x, str(x))
+
+                    time.sleep(0.2)
+
+                    result = transform_func(context)
+
+                return result
+
+            # ----------------------------------------------------------------------
+
+            if num_steps == 1:
+                return Execute
+
+            return num_steps, Execute
+
+        # ----------------------------------------------------------------------
+
+        sys.stdout.write("\n")
+        with DoneManager.Create(
+            sys.stdout,
+            "",
+            line_prefix="",
+            flags=DoneManagerFlags.Create(verbose=verbose),
+        ) as dm:
+            results = TransformTasksEx(
+                dm,
+                "Transforming...",
+                [TaskData(str(x), x) for x in range(num_tasks)],
+                Prepare,
+                experience_type=experience_type_enum,
+                max_num_threads=max_num_threads,
+                no_compress_tasks=no_compress_tasks,
+                return_exceptions=return_exceptions,
+            )
+
+            assert dm.result == expected_result
+            return results
+
+
+# ----------------------------------------------------------------------
+class TestTransformTasks:
+    # ----------------------------------------------------------------------
+    def test_Standard(self):
+        assert self.__class__._Execute(
+            None,
+            lambda context: context * 2,
+            10,
+        ) == [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
+
+    # ----------------------------------------------------------------------
+    @staticmethod
+    def _Execute(
+        experience_type: Optional[str],
+        transform_func: Callable[[int], Union[int, CompleteTransformResult]],
+        num_tasks: int,
+        num_steps: int = 1,
+        *,
+        single_threaded: bool = False,
+        verbose: bool = False,
+        no_compress_tasks: bool = False,
+        return_exceptions: bool = False,
+        expected_result: int = 0,
+        max_num_threads: Optional[int] = None,
+    ) -> list[Union[None, object, Exception]]:
+        experience_type_enum = None if experience_type is None else ExperienceType[experience_type]
+
+        if max_num_threads is None:
+            if single_threaded:
+                max_num_threads = 1
+            elif experience_type_enum == ExperienceType.ProgressBar:
+                max_num_threads = 7
+
+        # ----------------------------------------------------------------------
+        def Transform(
+            context: int,
+            status: Status,
+        ) -> Union[CompleteTransformResult, int]:
+            return transform_func(context)
+
+        # ----------------------------------------------------------------------
+
+        sys.stdout.write("\n")
+        with DoneManager.Create(
+            sys.stdout,
+            "",
+            line_prefix="",
+            flags=DoneManagerFlags.Create(verbose=verbose),
+        ) as dm:
+            results = TransformTasks(
+                dm,
+                "Transforming...",
+                [TaskData(str(x), x) for x in range(num_tasks)],
+                Transform,
+                experience_type=experience_type_enum,
+                max_num_threads=max_num_threads,
+                no_compress_tasks=no_compress_tasks,
+                return_exceptions=return_exceptions,
+            )
+
+            assert dm.result == expected_result
+            return results
+
+
+# ----------------------------------------------------------------------
+class TestYieldQueueExecutor:
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("single_threaded", [False, True], ids=["multithreaded", "single_threaded"])
+    @pytest.mark.parametrize("experience_type", ["ProgressBar", "Simple"])
+    def test_Standard(self, experience_type, single_threaded):
+        assert (
+            self.__class__._Execute(
+                experience_type,
+                lambda: "Done!",
+                num_tasks=10,
+                num_steps=5,
+                single_threaded=single_threaded,
+            )
+            == 0
+        )
+
+    # ----------------------------------------------------------------------
+    def test_WithEnqueueDelay(self):
+        assert (
+            self.__class__._Execute(
+                "ProgressBar",
+                lambda: "Done!",
+                num_tasks=10,
+                num_steps=5,
+                add_enqueue_delay=True,
+            )
+            == 0
+        )
+
+    # ----------------------------------------------------------------------
+    @staticmethod
+    def _Execute(
+        experience_type: Optional[str],
+        execute_func: Callable[[], str],
+        num_tasks: int,
+        num_steps: int = 1,
+        *,
+        single_threaded: bool = False,
+        verbose: bool = False,
+        max_num_threads: Optional[int] = None,
+        add_enqueue_delay: bool = False,
+    ) -> int:
+        experience_type_enum = None if experience_type is None else ExperienceType[experience_type]
+
+        if max_num_threads is None:
+            if single_threaded:
+                max_num_threads = 1
+            elif experience_type_enum == ExperienceType.ProgressBar:
+                max_num_threads = 7
+
         # ----------------------------------------------------------------------
         def Prepare(
             on_simple_status_func: Callable[[str], None],
-        ) -> ExecuteTasksTypes.ExecuteFuncType | tuple[int, ExecuteTasksTypes.ExecuteFuncType]:
+        ) -> Union[
+            tuple[int, YieldQueueExecutorTypes.ExecuteFuncType],
+            YieldQueueExecutorTypes.ExecuteFuncType,
+        ]:
             # ----------------------------------------------------------------------
-            def Execute(status: Status) -> int:
-                result, return_code = execute_func(context, status)
+            def Execute(status: Status) -> Optional[str]:
+                for x in range(num_steps):
+                    if num_steps != 1:
+                        status.OnProgress(x, str(x))
 
-                results[context] = result
-                return return_code
+                    time.sleep(0.2)
+
+                return execute_func()
 
             # ----------------------------------------------------------------------
 
@@ -249,10 +561,24 @@ def _ExecuteTasks(
 
         # ----------------------------------------------------------------------
 
-        return PathEx.CreateTempFileName(), Prepare
+        sys.stdout.write("\n")
+        with DoneManager.Create(
+            sys.stdout,
+            "",
+            line_prefix="",
+            flags=DoneManagerFlags.Create(verbose=verbose),
+        ) as dm:
+            with YieldQueueExecutor(
+                dm,
+                "Running Tasks...",
+                experience_type=experience_type_enum,
+                quiet=False,
+                max_num_threads=max_num_threads,
+            ) as enqueue_func:
+                for x in range(num_tasks):
+                    if add_enqueue_delay and x == 6:
+                        time.sleep(5)
 
-    # ----------------------------------------------------------------------
+                    enqueue_func(str(x), Prepare)
 
-    ExecuteTasks(dm, "Tasks", task_data, Init, **execute_tasks_kwargs)
-
-    return cast(list[int], results)
+            return dm.result
