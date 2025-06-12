@@ -476,15 +476,22 @@ def YieldQueueExecutor(  # noqa: PLR0915
 
                 with ExitStack(status_factory.Stop):
                     while True:
+                        task_desc: str | None = None
+                        prepare_func: YieldQueueExecutorTypes.PrepareFuncType | None = None
+
                         with available_condition:  # noqa: SIM117
                             with queue_lock:
-                                if not queue:
-                                    if quit_event.is_set():
-                                        break
+                                if queue:
+                                    task_desc, prepare_func = queue.pop(0)
+                                elif quit_event.is_set():
+                                    break
 
-                                    continue
+                            if task_desc is None or prepare_func is None:
+                                available_condition.wait()
+                                continue
 
-                                task_desc, prepare_func = queue.pop(0)
+                        assert task_desc is not None
+                        assert prepare_func is not None
 
                         # ----------------------------------------------------------------------
                         def Init(
