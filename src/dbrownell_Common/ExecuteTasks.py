@@ -168,6 +168,11 @@ class CompleteTransformResult:
     short_desc: Optional[str] = field(default=None)
 
 
+# Note that this definition is here for backwards compatibility. The class was named
+# `TransformResultComplete` prior to 0.14.8 and was renamed to `CompleteTranformResult` in 0.14.8.
+TransformResultComplete = CompleteTransformResult
+
+
 # ----------------------------------------------------------------------
 class TransformTasksExTypes:
     """Types used by `TransformTasksEx`."""
