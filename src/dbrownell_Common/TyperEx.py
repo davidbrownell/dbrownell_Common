@@ -394,11 +394,18 @@ def ProcessDynamicArgs(
             type_definitions = {
                 "extra_args1": (int, dict(min=10, max=100)),
                 "extra_args2": str,
-                "extra_args3": (list[int], typer.Option(None, "--extra-arg3")),
+                "extra_args3": (list[int], typer.Option(None, "--extra-args3")),
             }
 
             extra_args = ProcessDynamicArgs(ctx, type_definitions)
     """
+
+    click_params = _TypeDefinitionItemsToClickParams(
+        ResolveTypeDefinitions(
+            type_definitions,
+            force_optional=True,
+        ),
+    )
 
     # Group the arguments
     arguments: list[tuple[str, Optional[str]]] = []
@@ -415,21 +422,22 @@ def ProcessDynamicArgs(
 
             arguments[-1] = (arguments[-1][0], arg)
 
-    # Read default_map, which may be populated by typer-config
-    for k, v in (ctx.default_map or {}).items():
-        arguments.append((k, v))
+    # default_map is populated by typer-config
+    if ctx.default_map:
+        # Create a set of all argument names associated with dynamic values.
+        dynamic_names: set[str] = set()
+
+        for typer_info, _ in click_params.values():
+            for dynamic_name in typer_info.opts or []:
+                dynamic_names.add(dynamic_name.removeprefix("--"))
+
+        # Read dynamic arguments
+        for k, v in ctx.default_map.items():
+            if k in dynamic_names:
+                arguments.append((k, v))
 
     # Invoke the dynamic functionality
-    return _ProcessArgumentsImpl(
-        _TypeDefinitionItemsToClickParams(
-            ResolveTypeDefinitions(
-                type_definitions,
-                force_optional=True,
-            ),
-        ),
-        arguments,
-        ctx=ctx,
-    )
+    return _ProcessArgumentsImpl(click_params, arguments, ctx=ctx)
 
 
 # ----------------------------------------------------------------------
