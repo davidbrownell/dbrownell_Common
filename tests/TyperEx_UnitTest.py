@@ -20,6 +20,7 @@ from typing import Annotated
 import pytest
 
 from typer.testing import CliRunner
+from typer_config.decorators import use_yaml_config
 
 from dbrownell_Common.TyperEx import *
 
@@ -334,16 +335,44 @@ class TestProcessDynamicArgs:
                 "99",
                 "--extra-args2",
                 "abc",
-                "--extra-arg3",
+                "--extra-args3",
                 "1",
-                "--extra-arg3",
+                "--extra-args3",
                 "2",
-                "--extra-arg3",
+                "--extra-args3",
                 "3",
             ],
         )
 
         assert result.exit_code == 0
+        assert result.stdout == textwrap.dedent(
+            """\
+            10
+            False
+            {'extra_args1': 99, 'extra_args2': 'abc', 'extra_args3': [1, 2, 3]}
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_TyperConfig(self, _app, fs):
+        fs.create_file(
+            "config.yaml",
+            contents=textwrap.dedent(
+                """\
+                arg1: 10
+                extra-args1: 99
+                extra-args2: "abc"
+                extra-args3: [1, 2, 3]
+                """,
+            ),
+        )
+
+        result = CliRunner().invoke(
+            _app,
+            ["--config", "config.yaml"],
+        )
+
+        assert result.exit_code == 0, result.output
         assert result.stdout == textwrap.dedent(
             """\
             10
@@ -365,6 +394,7 @@ class TestProcessDynamicArgs:
             "MyFunc",
             context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
         )
+        @use_yaml_config()
         def MyFunc(
             ctx: typer.Context,
             arg1: Annotated[int, typer.Argument()],
@@ -374,7 +404,7 @@ class TestProcessDynamicArgs:
             type_definitions = {
                 "extra_args1": (int, typer.Option(None, min=10, max=100)),
                 "extra_args2": str,
-                "extra_args3": (list[int], typer.Option(None, "--extra-arg3")),
+                "extra_args3": (list[int], typer.Option(None, "--extra-args3")),
             }
 
             print(arg1)

@@ -135,9 +135,11 @@ dependencies = [
 dev = [
     { name = "autogitsemver" },
     { name = "pre-commit" },
+    { name = "pyfakefs" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "typer-config", extra = ["yaml"] },
 ]
 
 [package.metadata]
@@ -152,9 +154,11 @@ requires-dist = [
 dev = [
     { name = "autogitsemver", specifier = ">=0.8.0" },
     { name = "pre-commit", specifier = ">=4.2.0" },
+    { name = "pyfakefs", specifier = ">=5.8.0" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-cov", specifier = ">=6.1.1" },
     { name = "ruff", specifier = ">=0.11.9" },
+    { name = "typer-config", extras = ["yaml"], specifier = ">=1.4.2" },
 ]
 
 [[package]]
@@ -349,6 +353,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/08/39/679ca9b26c7bb2999ff122d50faa301e49af82ca9c066ec061cfbc0c6784/pre_commit-4.2.0.tar.gz", hash = "sha256:601283b9757afd87d40c4c4a9b2b5de9637a8ea02eaff7adc2d0fb4e04841146", size = 193424, upload-time = "2025-03-18T21:35:20.987Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/88/74/a88bf1b1efeae488a0c0b7bdf71429c313722d1fc0f377537fbe554e6180/pre_commit-4.2.0-py2.py3-none-any.whl", hash = "sha256:a009ca7205f1eb497d10b845e52c838a98b6cdd2102a6c8e4540e94ee75c58bd", size = 220707, upload-time = "2025-03-18T21:35:19.343Z" },
+]
+
+[[package]]
+name = "pyfakefs"
+version = "5.8.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/50/a839c8812899e8955223d95b27767480856f9723b3230ddee0472cf1dbe2/pyfakefs-5.8.0.tar.gz", hash = "sha256:7e5457ee3cc67069d3cef6e278227ecfc80bfb61e925bc0a4d3b0af32d1c99ce", size = 215072, upload-time = "2025-03-11T19:29:20.274Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/ac/ae2cf01b18b7ac04d22e5faf7d5eafcc000269c4f4a9036e40da6c37aed9/pyfakefs-5.8.0-py3-none-any.whl", hash = "sha256:4bd0fc8def7d0582139922447758632ff34a327b460a7e83feb6edbd841061dd", size = 230606, upload-time = "2025-03-11T19:29:18.341Z" },
 ]
 
 [[package]]
@@ -698,6 +711,11 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/2e/af/78f802bc49eaa5855082cca10e9c9d7d03469c957c149aa159561dc3d744/typer_config-1.4.2.tar.gz", hash = "sha256:69dffc0e06095b57754bfe9fb3e4caf28ab9c2c430dade6433b0ca128510f600", size = 10919, upload-time = "2024-11-08T01:59:06.635Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/df/bd/2e9d407d7ed3f33a40d8211a481b76a0507ba4f117da9dec116c0de9871e/typer_config-1.4.2-py3-none-any.whl", hash = "sha256:b3e1f59bacc8276e5b830f35c9ca403cd85f14173169c23c3756fa816357a34f", size = 11698, upload-time = "2024-11-08T01:59:05.787Z" },
+]
+
+[package.optional-dependencies]
+yaml = [
+    { name = "pyyaml" },
 ]
 
 [[package]]
