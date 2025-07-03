@@ -104,6 +104,15 @@ class Status(ABC):
         """Respond to an info message for the task."""
         raise Exception("Abstract method")  # pragma: no cover  # noqa: EM101, TRY002, TRY003
 
+    # ----------------------------------------------------------------------
+    @abstractmethod
+    def Log(
+        self,
+        message: str,
+    ) -> None:
+        """Write a message to the log file."""
+        raise Exception("Abstract method")  # pragma: no cover  # noqa: EM101, TRY002, TRY003
+
 
 # ----------------------------------------------------------------------
 class ExecuteTasksTypes:
@@ -587,6 +596,10 @@ class _InternalStatus(Status):
     """Augmented interface that adds internal functionality to the `Status` interface."""
 
     # ----------------------------------------------------------------------
+    def __init__(self) -> None:
+        self._log_messages: list[str] = []
+
+    # ----------------------------------------------------------------------
     @abstractmethod
     def SetNumSteps(
         self,
@@ -594,6 +607,16 @@ class _InternalStatus(Status):
     ) -> None:
         """Set the number of steps for the task."""
         raise Exception("Abstract method")  # pragma: no cover  # noqa: EM101, TRY002, TRY003
+
+    # ----------------------------------------------------------------------
+    def Log(self, message: str) -> None:
+        self._log_messages.append(message)
+
+    # ----------------------------------------------------------------------
+    @property
+    def log_messages(self) -> str:
+        """Return a single string containing all the log messages."""
+        return "\n".join(self._log_messages)
 
 
 # ----------------------------------------------------------------------
@@ -637,6 +660,8 @@ class _ProgressBarExperienceInternalStatus(_InternalStatus):
         *,
         is_output_verbose: bool,
     ) -> None:
+        super().__init__()
+
         self._stdout_context = stdout_context
         self._progress_bar = progress_bar
         self._task_id = task_id
@@ -1139,8 +1164,8 @@ def _ExecuteTask(  # noqa: PLR0915
     with ExitStack(lambda: on_task_data_complete_func(task_data)):
         start_time = time.perf_counter()
 
-        try:
-            with status_factory.GenerateInternalStatus(desc) as internal_status:
+        with status_factory.GenerateInternalStatus(desc) as internal_status:
+            try:
                 task_data.log_filename, prepare_func = init_func(task_data.context)
 
                 # ----------------------------------------------------------------------
@@ -1187,43 +1212,48 @@ def _ExecuteTask(  # noqa: PLR0915
                         task_data.result = execute_result
                         task_data.short_desc = None
 
-        except KeyboardInterrupt:
-            raise
+            except KeyboardInterrupt:
+                raise
 
-        except Exception as ex:
-            error = traceback.format_exc() if is_debug else str(ex)
-            error = error.strip()
+            except Exception as ex:
+                error = traceback.format_exc() if is_debug else str(ex)
+                error = error.strip()
 
-            if not error:
-                error = traceback.format_exc().strip()
+                if not error:
+                    error = traceback.format_exc().strip()
 
-            if not hasattr(task_data, "log_filename"):
-                # If here, this error happened before we received anything from the initial callback.
-                # Create a log file and write the exception information to it.
-                task_data.log_filename = PathEx.CreateTempFileName()
-                assert task_data.log_filename is not None
+                if not hasattr(task_data, "log_filename"):
+                    # If here, this error happened before we received anything from the initial callback.
+                    # Create a log file and write the exception information to it.
+                    task_data.log_filename = PathEx.CreateTempFileName()
+                    assert task_data.log_filename is not None
 
-                task_data.log_filename.write_text(error)
-            else:
-                with task_data.log_filename.open("a+") as f:
-                    f.write(f"\n\n{error}\n")
+                    task_data.log_filename.write_text(error)
+                else:
+                    with task_data.log_filename.open("a+") as f:
+                        f.write(f"\n\n{error}\n")
 
-            if isinstance(ex, TransformError):
-                result = 1
-                short_desc = f"{task_data.display} failed"
-            else:
-                result = CATASTROPHIC_TASK_FAILURE_RESULT
-                short_desc = f"{desc} failed"
+                if isinstance(ex, TransformError):
+                    result = 1
+                    short_desc = f"{task_data.display} failed"
+                else:
+                    result = CATASTROPHIC_TASK_FAILURE_RESULT
+                    short_desc = f"{desc} failed"
 
-            task_data.result = result
-            task_data.short_desc = short_desc
+                task_data.result = result
+                task_data.short_desc = short_desc
 
-        finally:
-            assert hasattr(task_data, "result")
-            assert hasattr(task_data, "short_desc")
-            assert hasattr(task_data, "log_filename")
+            finally:
+                assert hasattr(task_data, "result")
+                assert hasattr(task_data, "short_desc")
+                assert hasattr(task_data, "log_filename")
 
-            task_data.execution_time = datetime.timedelta(seconds=time.perf_counter() - start_time)
+                log_messages = internal_status.log_messages
+                if log_messages:
+                    with task_data.log_filename.open("a+") as f:
+                        f.write(f"\n\n{log_messages}\n")
+
+                task_data.execution_time = datetime.timedelta(seconds=time.perf_counter() - start_time)
 
 
 # ----------------------------------------------------------------------
