@@ -158,7 +158,7 @@ jobs:
         run: uv sync --frozen
 
       - name: Update Version
-        run: uv run python -m AutoGitSemVer.scripts.UpdatePythonVersion ./src/dbrownell_Common/__init__.py ./src --verbose
+        run: uv run --with AutoGitSemVer python -m AutoGitSemVer.scripts.UpdatePythonVersion ./src/dbrownell_Common/__init__.py ./src --verbose
 
       - name: Build Python Package
         run: uv build
