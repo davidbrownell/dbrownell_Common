@@ -46,12 +46,15 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "autogitsemver>=0.8.0",
+    # We can't rely on the AutoGitSemVer package, because it relies on this package. So, rather than
+    # creating an explict dependency, invoke it as a tool within the CI process.
+    # "autogitsemver>=0.8.3",
     "pre-commit>=4.2.0",
-    "pyfakefs>=5.8.0",
-    "pytest>=8.3.5",
-    "pytest-cov>=6.1.1",
-    "ruff>=0.11.9",
+    "py-minisign>=0.12.0",
+    "pyfakefs>=5.9.1",
+    "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
+    "ruff>=0.12.3",
     "typer-config[yaml]>=1.4.2",
 ]
 
@@ -75,13 +78,22 @@ ignore = [
     "ANN003", # Missing type annotation for `**kwargs`
     "BLE001", # Do not catch blind exception: `Exception`
     "COM812", # Trailing comma missing
+    "D105", # Missing docstring in magic method
+    "D107", # Missing docstring in `__init__` method
     "D202", # No blank lines allowed after function docstring
     "E501", # Line too long
     "E731", # Rewrite lambda as def
+    "FIX002", # Line contains TODO, consider resolving the issue
     "I001", # Import block is un-sorted or un-formatted
     "N802", # Function name `xxx` should be lowercase
     "N999", # Invalid module name
+    "RSE102", # Unnecessary parentheses on raise exception
     "S101", # Use of assert detected
+    "TC006", # Add quotes to type expression in `typing.cast()`
+    "TD002", # Missing author in TODO
+    "TD003", # Missing issue link for this TODO
+    "TRY002", # Create your own exception
+    "TRY300", # Consider moving this statement to an `else` block
     "UP032", # Use f-string instead of `format` call
 ]
 
