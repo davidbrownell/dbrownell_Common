@@ -75,7 +75,7 @@ class Capabilities:
                 columns = int(value)
                 explicit_columns = True
             else:
-                columns = self.__class__.DEFAULT_COLUMNS
+                columns = None
                 explicit_columns = True
 
         # is_interactive
@@ -145,7 +145,6 @@ class Capabilities:
             if stream is sys.stdout and self.__class__._processed_stdout is False:
                 try:
                     import rich
-                    from rich.console import ConsoleDimensions
 
                     if (
                         explicit_columns
@@ -160,9 +159,7 @@ class Capabilities:
 
                         rich.reconfigure(**rich_args)
 
-                        if width_arg is not None:
-                            console = rich.get_console()
-                            console.size = ConsoleDimensions(width_arg, console.height)
+                        self._UpdateConsoleWidth(rich.get_console(), width_arg)
 
                     # Validate that the width is acceptable. This has to be done AFTER
                     # the capabilities have been associated with the stream.
@@ -306,12 +303,10 @@ class Capabilities:
 
             args["file"] = file
 
-            from rich.console import Console, ConsoleDimensions
+            from rich.console import Console
 
             result = Console(**args)
-
-            if width_arg is not None:
-                result.size = ConsoleDimensions(width_arg, result.height)
+            self._UpdateConsoleWidth(result, width_arg)
 
             return result
 
@@ -354,3 +349,15 @@ class Capabilities:
                 args["no_color"] = True
 
         return args
+
+    def _UpdateConsoleWidth(self, console, width_arg):
+        from rich.console import ConsoleDimensions
+
+        if width_arg is not None:
+            console.size = ConsoleDimensions(width_arg, console.height)
+        else:
+            # If width_arg is None,
+            # we set it to maximum DEFAULT_COLUMNS
+            console.size = ConsoleDimensions(
+                min(console.width, self.__class__.DEFAULT_COLUMNS),
+                console.height)
