@@ -16,6 +16,7 @@
 import re
 import sys
 
+from io import StringIO
 from unittest.mock import MagicMock as Mock
 
 import pytest
@@ -77,8 +78,11 @@ def test_WithStdout():
         columns=columns,
     )
 
-    assert Capabilities._processed_stdout is True
+    assert Capabilities._processed_stdout is False
     assert c.columns == columns
+
+    Capabilities.Set(sys.stdout, c)
+    assert Capabilities._processed_stdout is True
 
 
 # ----------------------------------------------------------------------
@@ -89,10 +93,21 @@ def test_SetError():
     with pytest.raises(
         Exception,
         match=re.escape(
-            "Capabilities are assigned to a stream when it is first created and cannot be changed; consider using the `Clone` method."
+            "Capabilities have already been applied to this stream; consider using the `Clone` method."
         ),
     ):
-        Capabilities(stream=stream)
+        Capabilities.Set(stream, Capabilities(stream=stream))
+
+
+# ----------------------------------------------------------------------
+def test_IsSet():
+    stream = StringIO()
+
+    assert not Capabilities.IsSet(stream)
+
+    Capabilities.Set(stream, Capabilities(stream=stream))
+
+    assert Capabilities.IsSet(stream)
 
 
 # ----------------------------------------------------------------------
