@@ -191,6 +191,11 @@ class Flags(Flag):
 
 
 # ----------------------------------------------------------------------
+# Set the number of columns to the terminal width
+SCREEN_WIDTH = -1
+
+
+# ----------------------------------------------------------------------
 @dataclass(frozen=True)
 class Args:
     """Arguments provided when creating DoneManager instances"""
@@ -327,9 +332,29 @@ class DoneManager:
         *,
         flags: Flags = Flags.Standard,
         display: bool = True,
+        no_column_warning: bool = False,
         **kwargs,
     ) -> Iterator["DoneManager"]:
         """Creates a DoneManager instance suitable for use with command-line functionality."""
+
+        # Set the number of columns to display on the terminal
+        if not Capabilities.IsSet(stream):
+            num_cols: Optional[int] = kwargs.get("num_cols", None)
+
+            if num_cols == SCREEN_WIDTH:
+                num_cols = os.get_terminal_size().columns
+                kwargs["num_cols"] = num_cols
+
+            capabilities = Capabilities.Get(stream)
+
+            if num_cols is not None:
+                capabilities = capabilities.Clone(columns=num_cols)
+
+            Capabilities.Set(
+                stream,
+                capabilities,
+                no_column_warning=no_column_warning,
+            )
 
         if display:
             prefix = "\nResults: "

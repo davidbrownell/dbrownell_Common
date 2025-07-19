@@ -444,6 +444,8 @@ def test_Capabilities():
     sink = StringIO()
     capabilities = Capabilities(stream=sink)
 
+    Capabilities.Set(sink, capabilities)
+
     with DoneManager.Create(sink, "Testing") as dm:
         assert dm.capabilities is capabilities
 
@@ -1524,11 +1526,14 @@ class _FakeStream(TextWriter):
         self._fileno = fileno
         self._isatty = isatty
 
-        Capabilities(
-            stream=self,
-            is_headless=is_headless,
-            is_interactive=is_interactive,
-            supports_colors=supports_colors,
+        Capabilities.Set(
+            self,
+            Capabilities(
+                stream=self,
+                is_headless=is_headless,
+                is_interactive=is_interactive,
+                supports_colors=supports_colors,
+            ),
         )
 
     # ----------------------------------------------------------------------
@@ -1566,11 +1571,14 @@ def _CreateSink(
 ) -> StringIO:
     sink = StringIO()
 
-    Capabilities(
-        stream=sink,
-        is_headless=True,
-        is_interactive=False,
-        supports_colors=supports_colors,
+    Capabilities.Set(
+        sink,
+        Capabilities(
+            stream=sink,
+            is_headless=True,
+            is_interactive=False,
+            supports_colors=supports_colors,
+        ),
     )
 
     return sink

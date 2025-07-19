@@ -157,11 +157,14 @@ def InitializeStreamCapabilities(
     os.environ[Capabilities.SIMULATE_TERMINAL_HEADLESS_ENV_VAR] = "1"
 
     # Associate the capabilities with the stream
-    Capabilities(
-        columns=Capabilities.DEFAULT_COLUMNS,
-        is_interactive=False,
-        is_headless=True,
-        supports_colors=True,
-        stream=stream,
+    Capabilities.Set(
+        stream,
+        Capabilities(
+            columns=Capabilities.DEFAULT_COLUMNS,
+            is_interactive=False,
+            is_headless=True,
+            supports_colors=True,
+            stream=stream,
+        ),
         no_column_warning=True,
     )
