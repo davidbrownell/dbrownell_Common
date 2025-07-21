@@ -57,7 +57,6 @@ class Capabilities:
         is_interactive: Optional[bool] = None,
         supports_colors: Optional[bool] = None,
         stream: Optional[TextWriterT] = None,
-        no_column_warning: bool = False,
         ignore_environment: bool = False,
     ):
         # columns
@@ -138,69 +137,6 @@ class Capabilities:
         self.explicit_is_interactive = explicit_is_interactive
         self.explicit_supports_colors = explicit_supports_colors
 
-        # Validate the settings for sys.stdout
-        if stream:
-            self.__class__.Set(stream, self)
-
-            if stream is sys.stdout and self.__class__._processed_stdout is False:
-                try:
-                    import rich
-                    from rich.console import ConsoleDimensions
-
-                    if (
-                        explicit_columns
-                        or explicit_is_headless
-                        or explicit_is_interactive
-                        or explicit_supports_colors
-                    ):
-                        rich_args = self._GetRichConsoleArgs()
-
-                        # Width needs to be set separately
-                        width_arg = rich_args.pop("width", None)
-
-                        rich.reconfigure(**rich_args)
-
-                        if width_arg is not None:
-                            console = rich.get_console()
-                            console.size = ConsoleDimensions(width_arg, console.height)
-
-                    # Validate that the width is acceptable. This has to be done AFTER
-                    # the capabilities have been associated with the stream.
-                    if not no_column_warning:
-                        console = rich.get_console()
-
-                        if console.width < self.__class__.DEFAULT_COLUMNS:
-                            # Importing here to avoid circular imports
-                            from dbrownell_Common import TextwrapEx
-                            from dbrownell_Common.Streams.StreamDecorator import (
-                                StreamDecorator,
-                            )  # pylint: disable=cyclic-import
-
-                            StreamDecorator(
-                                sys.stdout,
-                                line_prefix=TextwrapEx.CreateWarningPrefix(self.supports_colors),
-                            ).write(
-                                textwrap.dedent(
-                                    """\
-
-
-                                    Output is configured for a width of '{}', but your terminal has a width of '{}'.
-
-                                    Some formatting may not appear as intended.
-
-
-                                    """,
-                                ).format(
-                                    self.__class__.DEFAULT_COLUMNS,
-                                    console.width,
-                                ),
-                            )
-
-                except ImportError:  # pragma: no cover
-                    pass  # pragma: no cover
-
-                self.__class__._processed_stdout = True
-
     # ----------------------------------------------------------------------
     @staticmethod
     def Compare(
@@ -246,6 +182,15 @@ class Capabilities:
 
     # ----------------------------------------------------------------------
     @classmethod
+    def IsSet(
+        cls,
+        stream: TextWriterT,
+    ) -> bool:
+        """Return True if the capabilities have been set for the stream."""
+        return getattr(stream, cls._EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME, None) is not None
+
+    # ----------------------------------------------------------------------
+    @classmethod
     def Get(
         cls,
         stream: TextWriterT,
@@ -262,13 +207,76 @@ class Capabilities:
         cls,
         stream: TextWriterT,
         capabilities: "Capabilities",
+        *,
+        no_column_warning: bool = False,
     ) -> TextWriterT:
         if getattr(stream, cls._EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME, None) is not None:
             raise Exception(
-                "Capabilities are assigned to a stream when it is first created and cannot be changed; consider using the `Clone` method."
+                "Capabilities have already been applied to this stream; consider using the `Clone` method."
             )
 
         setattr(stream, cls._EMBEDDED_CAPABILITIES_ATTRIBUTE_NAME, capabilities)
+
+        # Validate the settings for sys.stdout
+        if stream is sys.stdout and cls._processed_stdout is False:
+            try:
+                import rich
+                from rich.console import ConsoleDimensions
+
+                if (
+                    capabilities.explicit_columns
+                    or capabilities.explicit_is_headless
+                    or capabilities.explicit_is_interactive
+                    or capabilities.explicit_supports_colors
+                ):
+                    rich_args = capabilities._GetRichConsoleArgs()
+
+                    # Width needs to be set separately
+                    width_arg = rich_args.pop("width", None)
+
+                    rich.reconfigure(**rich_args)
+
+                    if width_arg is not None:
+                        console = rich.get_console()
+                        console.size = ConsoleDimensions(width_arg, console.height)
+
+                # Validate that the width is acceptable. This has to be done AFTER
+                # the capabilities have been associated with the stream.
+                if not no_column_warning:
+                    console = rich.get_console()
+
+                    if console.width < cls.DEFAULT_COLUMNS:
+                        # Importing here to avoid circular imports
+                        from dbrownell_Common import TextwrapEx
+                        from dbrownell_Common.Streams.StreamDecorator import (
+                            StreamDecorator,
+                        )  # pylint: disable=cyclic-import
+
+                        StreamDecorator(
+                            sys.stdout,
+                            line_prefix=TextwrapEx.CreateWarningPrefix(capabilities.supports_colors),
+                        ).write(
+                            textwrap.dedent(
+                                """\
+
+
+                                Output is configured for a width of '{}', but your terminal has a width of '{}'.
+
+                                Some formatting may not appear as intended.
+
+
+                                """,
+                            ).format(
+                                cls.DEFAULT_COLUMNS,
+                                console.width,
+                            ),
+                        )
+
+            except ImportError:  # pragma: no cover
+                pass  # pragma: no cover
+
+            cls._processed_stdout = True
+
         return stream
 
     # ----------------------------------------------------------------------
