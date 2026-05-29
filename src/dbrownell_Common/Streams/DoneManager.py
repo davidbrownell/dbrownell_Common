@@ -73,8 +73,6 @@ try:
 
         import typer
 
-    from click.exceptions import ClickException
-
     # ----------------------------------------------------------------------
     def ExitWithTyper(
         result: int,
@@ -85,7 +83,17 @@ try:
     def ShouldRaiseExceptionWithTyper(
         exception: Exception,
     ) -> bool:
-        return isinstance(exception, (typer.Exit, typer.Abort, ClickException))
+        typer_exceptions = (typer.Exit, typer.Abort)
+
+        try:
+            from click.exceptions import ClickException
+
+            typer_exceptions += (ClickException,)
+        except ImportError:
+            # If here, we are likely using a newer version of typer, which no longer has click as a package dependency.
+            pass
+
+        return isinstance(exception, typer_exceptions)
 
     # ----------------------------------------------------------------------
 
