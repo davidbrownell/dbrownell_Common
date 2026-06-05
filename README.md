@@ -4,10 +4,12 @@
 **Package:**
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dbrownell_Common?color=dark-green)](https://pypi.org/project/dbrownell_Common/)
 [![PyPI - Version](https://img.shields.io/pypi/v/dbrownell_Common?color=dark-green)](https://pypi.org/project/dbrownell_Common/)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/dbrownell_Common)](https://pypistats.org/packages/dbrownell_Common)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/dbrownell_Common)](https://pypistats.org/packages/dbrownell-common)
 
 **Development:**
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![pytest](https://img.shields.io/badge/pytest-enabled-brightgreen)](https://docs.pytest.org/)
 [![CI](https://github.com/davidbrownell/dbrownell_Common/actions/workflows/CICD.yml/badge.svg)](https://github.com/davidbrownell/dbrownell_Common/actions/workflows/CICD.yml)
 [![Code Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/davidbrownell/f15146b1b8fdc0a5d45ac0eb786a84f7/raw/dbrownell_Common_code_coverage.json)](https://github.com/davidbrownell/dbrownell_Common/actions)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/y/davidbrownell/dbrownell_Common?color=dark-green)](https://github.com/davidbrownell/dbrownell_Common/commits/main/)
