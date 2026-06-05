@@ -1,12 +1,12 @@
 # Changes here will be overwritten by Copier; DO NOT MODIFY THIS FILE DIRECTLY!
 #
 # This file was generated using copier (https://copier.readthedocs.io/) with the
-# template copier-UvScaffolding (https://github.com/gt-sse-center/copier-UvScaffolding).
+# template copier-UvScaffolding (https://github.com/gt-csse/copier-UvScaffolding).
 # Additional information (including instructions on how to use this template with copier) is
-# available at https://github.com/gt-sse-center/copier-UvScaffolding.
+# available at https://github.com/gt-csse/copier-UvScaffolding.
 #
 
-_commit: v0.2.4
+_commit: v0.5.11
 _src_path: .
 author_email: github@DavidBrownell.com
 author_name: David Brownell
@@ -15,8 +15,9 @@ coverage_badge_gist_username: davidbrownell
 github_host: https://github.com
 github_repo_name: dbrownell_Common
 github_username: davidbrownell
+install_ty: false
 license: MIT
 project_name: dbrownell_Common
 python_package_name: dbrownell_Common
-python_versions: 3.10, 3.11, 3.12, 3.13
+python_versions: 3.10, 3.11, 3.12, 3.13, 3.14
 sign_artifacts_question: true
