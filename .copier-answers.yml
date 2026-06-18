@@ -19,5 +19,5 @@ install_ty: false
 license: MIT
 project_name: dbrownell_Common
 python_package_name: dbrownell_Common
-python_versions: 3.10, 3.11, 3.12, 3.13, 3.14
+python_versions: 3.11, 3.12, 3.13, 3.14
 sign_artifacts_question: true

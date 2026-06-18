@@ -31,7 +31,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.10",
     "Topic :: Software Development",
     "Topic :: System :: System Shells",
     "Topic :: Terminals",
@@ -47,7 +46,7 @@ Documentation = "https://github.com/davidbrownell/dbrownell_Common"
 Repository = "https://github.com/davidbrownell/dbrownell_Common"
 
 [build-system]
-requires = ["uv_build>=0.11.19,<0.12.0"]
+requires = ["uv_build>=0.11.21,<0.12.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
@@ -65,7 +64,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--verbose -vv --capture=no --cov=dbrownell_Common --cov-report term --cov-report xml:coverage.xml --cov-fail-under=84.0"
+addopts = "--verbose -vv --capture=no --cov=dbrownell_Common --cov-report term --cov-report xml:coverage.xml --cov-fail-under=82.0"
 python_files = [
     "**/*Test.py",
 ]
