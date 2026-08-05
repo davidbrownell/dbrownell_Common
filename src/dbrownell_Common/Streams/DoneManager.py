@@ -1076,7 +1076,11 @@ class _LogHandler(logging.Handler):
             elif record.levelno >= logging.WARNING:
                 write_func = self._dm.WriteWarning
             elif record.levelno >= logging.INFO:
-                write_func = self._dm.WriteInfo
+                # Info-level messages written to a logger are considered to be verbose messages,
+                # rather than standard info messages, since they are typically more detailed
+                # and not always relevant to the user. Therefore, we use `WriteVerbose` for
+                # info-level log messages.
+                write_func = self._dm.WriteVerbose
             else:
                 write_func = self._dm.WriteDebug
 
