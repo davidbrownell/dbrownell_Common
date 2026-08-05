@@ -1515,9 +1515,11 @@ class TestYieldStdout:
 class TestYieldLogger:
     # ----------------------------------------------------------------------
     def test_LevelMapping(self):
+        # INFO records are routed to `WriteVerbose`, so the debug flags are used here to ensure
+        # that every level is displayed.
         sink = _CreateSink()
 
-        with DoneManager.Create(sink, "Testing") as dm:
+        with DoneManager.Create(sink, "Testing", flags=Flags.Create(debug=True)) as dm:
             with dm.YieldLogger(self._logger_name):
                 logger = logging.getLogger(self._logger_name)
 
@@ -1525,6 +1527,7 @@ class TestYieldLogger:
                 logger.error("The error")
                 logger.warning("The warning")
                 logger.info("The info")
+                logger.debug("The debug")
 
         assert _Scrub(sink.getvalue()) == textwrap.dedent(
             """\
@@ -1532,8 +1535,37 @@ class TestYieldLogger:
               ERROR: The critical
               ERROR: The error
               WARNING: The warning
-              INFO: The info
+              VERBOSE: The info
+              DEBUG: The debug
             DONE! (-1, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_InfoRecordWithoutVerboseFlagIsNotDisplayed(self):
+        # INFO records are routed to `WriteVerbose`, which is a no-op when the DoneManager was not
+        # created with the verbose flag.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logging.getLogger(self._logger_name).info("The info")
+
+        assert _Scrub(sink.getvalue()) == "Testing...DONE! (0, <Scrubbed Time>)\n"
+
+    # ----------------------------------------------------------------------
+    def test_VerboseFlagEnablesInfo(self):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing", flags=Flags.Create(verbose=True)) as dm:
+            with dm.YieldLogger(self._logger_name):
+                logging.getLogger(self._logger_name).info("The info")
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              VERBOSE: The info
+            DONE! (0, <Scrubbed Time>)
             """,
         )
 
@@ -1583,7 +1615,7 @@ class TestYieldLogger:
             """\
             Testing...
               DEBUG: The debug
-              INFO: The info
+              VERBOSE: The info
             DONE! (0, <Scrubbed Time>)
             """,
         )
@@ -1608,22 +1640,22 @@ class TestYieldLogger:
     @pytest.mark.parametrize(
         ("flags", "expected_lines"),
         [
-            # `WriteInfo` is not gated on the verbose flag, so the INFO record is displayed even
-            # with the standard flags.
+            # INFO records are routed to `WriteVerbose`, which is a no-op unless the verbose flag
+            # is set; `WriteDebug` is a no-op unless the debug flag is set.
             (
                 Flags.Create(),
-                ["  INFO: The info", "  WARNING: The warning", "  ERROR: The error"],
+                ["  WARNING: The warning", "  ERROR: The error"],
             ),
             (
                 Flags.Create(verbose=True),
-                ["  INFO: The info", "  WARNING: The warning", "  ERROR: The error"],
+                ["  VERBOSE: The info", "  WARNING: The warning", "  ERROR: The error"],
             ),
-            # `WriteDebug` is a no-op unless the debug flag is set.
+            # The debug flag implies the verbose flag, so INFO records are displayed as well.
             (
                 Flags.Create(debug=True),
                 [
                     "  DEBUG: The debug",
-                    "  INFO: The info",
+                    "  VERBOSE: The info",
                     "  WARNING: The warning",
                     "  ERROR: The error",
                 ],
@@ -1737,15 +1769,15 @@ class TestYieldLogger:
     def test_MultilineContent(self):
         sink = _CreateSink()
 
-        with DoneManager.Create(sink, "Testing") as dm:
+        with DoneManager.Create(sink, "Testing", flags=Flags.Create(verbose=True)) as dm:
             with dm.YieldLogger(self._logger_name):
                 logging.getLogger(self._logger_name).info("Line 1\nLine 2")
 
         assert _Scrub(sink.getvalue()) == textwrap.dedent(
             """\
             Testing...
-              INFO: Line 1
-                    Line 2
+              VERBOSE: Line 1
+                       Line 2
             DONE! (0, <Scrubbed Time>)
             """,
         )
@@ -1755,7 +1787,7 @@ class TestYieldLogger:
         # Content written by a nested DoneManager's logger is indented to match the nesting.
         sink = _CreateSink()
 
-        with DoneManager.Create(sink, "Testing") as dm:
+        with DoneManager.Create(sink, "Testing", flags=Flags.Create(verbose=True)) as dm:
             with dm.Nested("Nested...") as nested_dm:
                 with nested_dm.YieldLogger(self._logger_name):
                     logging.getLogger(self._logger_name).info("The info")
@@ -1764,7 +1796,7 @@ class TestYieldLogger:
             """\
             Testing...
               Nested...
-                INFO: The info
+                VERBOSE: The info
               DONE! (0, <Scrubbed Time>)
             DONE! (0, <Scrubbed Time>)
             """,
@@ -1847,7 +1879,7 @@ class TestYieldLogger:
         num_threads = 5
         num_messages = 20
 
-        with DoneManager.Create(sink, "Testing") as dm:
+        with DoneManager.Create(sink, "Testing", flags=Flags.Create(verbose=True)) as dm:
             with dm.YieldLogger(self._logger_name):
                 logger = logging.getLogger(self._logger_name)
 
@@ -1875,7 +1907,8 @@ class TestYieldLogger:
         for thread_index in range(num_threads):
             for message_index in range(num_messages):
                 assert (
-                    content.count("  INFO: Thread {} message {}\n".format(thread_index, message_index)) == 1
+                    content.count("  VERBOSE: Thread {} message {}\n".format(thread_index, message_index))
+                    == 1
                 )
 
     # ----------------------------------------------------------------------
