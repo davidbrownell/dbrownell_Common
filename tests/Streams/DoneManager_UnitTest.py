@@ -13,16 +13,21 @@
 # ----------------------------------------------------------------------
 """Unit tests for DoneManager.py."""
 
+import logging
 import re
 import sys
 import textwrap
+import threading
 
+from collections.abc import Iterator
+from contextlib import contextmanager
 from io import StringIO
 from typing import cast, Optional
 
 import pytest
 
 from dbrownell_Common import TextwrapEx
+from dbrownell_Common.ContextlibEx import ExitStack
 from dbrownell_Common.Streams.Capabilities import Capabilities
 from dbrownell_Common.Streams.DoneManager import DoneManager, DoneManagerException, Flags
 from dbrownell_Common.Streams.TextWriter import TextWriter
@@ -1504,6 +1509,605 @@ class TestYieldStdout:
                 context.persist_content = False
 
                 # Verify that the text does not appear in sys.stdout
+
+
+# ----------------------------------------------------------------------
+class TestYieldLogger:
+    # ----------------------------------------------------------------------
+    def test_LevelMapping(self):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logger = logging.getLogger(self._logger_name)
+
+                logger.critical("The critical")
+                logger.error("The error")
+                logger.warning("The warning")
+                logger.info("The info")
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              ERROR: The critical
+              ERROR: The error
+              WARNING: The warning
+              INFO: The info
+            DONE! (-1, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize(
+        "flags",
+        [
+            Flags.Create(),
+            Flags.Create(verbose=True),
+            Flags.Create(debug=True),
+            Flags.Standard,
+            Flags.Verbose,
+            Flags.Debug,
+        ],
+    )
+    def test_LoggerLevelIsDebug(self, flags):
+        # The logger is set to DEBUG regardless of the flags, so every record reaches the handler
+        # and the filtering decision is made by the `DoneManager` write methods instead.
+        logger = logging.getLogger(self._logger_name)
+
+        with DoneManager.Create(_CreateSink(), "Testing", flags=flags) as dm:
+            with dm.YieldLogger(self._logger_name):
+                assert logger.level == logging.DEBUG
+                assert logger.getEffectiveLevel() == logging.DEBUG
+
+    # ----------------------------------------------------------------------
+    def test_YieldsNone(self):
+        with DoneManager.Create(_CreateSink(), "Testing") as dm:
+            with dm.YieldLogger(self._logger_name) as result:
+                assert result is None
+
+    # ----------------------------------------------------------------------
+    def test_RootLoggerLevelDoesNotFilter(self):
+        # Because the logger is set to DEBUG, a restrictive level on the root logger does not
+        # filter records before they reach the handler.
+        sink = _CreateSink()
+
+        with self._RootLoggerLevel(logging.CRITICAL):
+            with DoneManager.Create(sink, "Testing", flags=Flags.Create(debug=True)) as dm:
+                with dm.YieldLogger(self._logger_name):
+                    logger = logging.getLogger(self._logger_name)
+
+                    logger.debug("The debug")
+                    logger.info("The info")
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              DEBUG: The debug
+              INFO: The info
+            DONE! (0, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_StandardFlagsAdmitWarning(self):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logging.getLogger(self._logger_name).warning("The warning")
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              WARNING: The warning
+            DONE! (1, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize(
+        ("flags", "expected_lines"),
+        [
+            # `WriteInfo` is not gated on the verbose flag, so the INFO record is displayed even
+            # with the standard flags.
+            (
+                Flags.Create(),
+                ["  INFO: The info", "  WARNING: The warning", "  ERROR: The error"],
+            ),
+            (
+                Flags.Create(verbose=True),
+                ["  INFO: The info", "  WARNING: The warning", "  ERROR: The error"],
+            ),
+            # `WriteDebug` is a no-op unless the debug flag is set.
+            (
+                Flags.Create(debug=True),
+                [
+                    "  DEBUG: The debug",
+                    "  INFO: The info",
+                    "  WARNING: The warning",
+                    "  ERROR: The error",
+                ],
+            ),
+        ],
+    )
+    def test_FlagBasedFiltering(self, flags, expected_lines):
+        # End-to-end verification of which records are displayed for each set of flags. Every
+        # record reaches the handler, so the flags are the only thing that filters.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing", flags=flags) as dm:
+            with dm.YieldLogger(self._logger_name):
+                logger = logging.getLogger(self._logger_name)
+
+                logger.debug("The debug")
+                logger.info("The info")
+                logger.warning("The warning")
+                logger.error("The error")
+
+        assert _Scrub(sink.getvalue()) == "Testing...\n{}\nDONE! (-1, <Scrubbed Time>)\n".format(
+            "\n".join(expected_lines),
+        )
+
+    # ----------------------------------------------------------------------
+    def test_RestrictiveLoggerLevelIsOverridden(self):
+        # A restrictive level set on the logger before the context is replaced by DEBUG, so
+        # records that the logger would otherwise have filtered are displayed.
+        sink = _CreateSink()
+
+        logger = logging.getLogger(self._logger_name)
+        logger.setLevel(logging.CRITICAL)
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logger.warning("The warning")
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              WARNING: The warning
+            DONE! (1, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_DebugFlagEnablesDebug(self):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing", flags=Flags.Create(debug=True)) as dm:
+            with dm.YieldLogger(self._logger_name):
+                logging.getLogger(self._logger_name).debug("The debug")
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              DEBUG: The debug
+            DONE! (0, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_DebugRecordWithoutDebugFlagIsNotDisplayed(self):
+        # The record reaches the handler, but `WriteDebug` is a no-op when the DoneManager was
+        # not created with the debug flag.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logging.getLogger(self._logger_name).debug("The debug")
+
+        assert _Scrub(sink.getvalue()) == "Testing...DONE! (0, <Scrubbed Time>)\n"
+
+    # ----------------------------------------------------------------------
+    def test_MultipleLoggers(self):
+        names = [
+            "{}.one".format(self._logger_name),
+            "{}.two".format(self._logger_name),
+        ]
+
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(*names):
+                for name in names:
+                    logging.getLogger(name).warning("From {}".format(name))
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              WARNING: From {one}
+              WARNING: From {two}
+            DONE! (1, <Scrubbed Time>)
+            """,
+        ).format(
+            one=names[0],
+            two=names[1],
+        )
+
+    # ----------------------------------------------------------------------
+    def test_NoLoggers(self):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger():
+                pass
+
+        assert _Scrub(sink.getvalue()) == "Testing...DONE! (0, <Scrubbed Time>)\n"
+
+    # ----------------------------------------------------------------------
+    def test_MultilineContent(self):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logging.getLogger(self._logger_name).info("Line 1\nLine 2")
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              INFO: Line 1
+                    Line 2
+            DONE! (0, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_NestedDoneManager(self):
+        # Content written by a nested DoneManager's logger is indented to match the nesting.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.Nested("Nested...") as nested_dm:
+                with nested_dm.YieldLogger(self._logger_name):
+                    logging.getLogger(self._logger_name).info("The info")
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              Nested...
+                INFO: The info
+              DONE! (0, <Scrubbed Time>)
+            DONE! (0, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_LoggerRestoredOnExit(self):
+        logger = logging.getLogger(self._logger_name)
+
+        original_handler = logging.NullHandler()
+
+        logger.handlers = [original_handler]
+        logger.propagate = True
+        logger.setLevel(logging.CRITICAL)
+
+        with DoneManager.Create(_CreateSink(), "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                assert logger.handlers != [original_handler]
+                assert logger.propagate is False
+                assert logger.level == logging.DEBUG
+
+        assert logger.handlers == [original_handler]
+        assert logger.propagate is True
+        assert logger.level == logging.CRITICAL
+
+    # ----------------------------------------------------------------------
+    def test_LoggerRestoredOnException(self):
+        logger = logging.getLogger(self._logger_name)
+
+        original_handler = logging.NullHandler()
+
+        logger.handlers = [original_handler]
+        logger.propagate = True
+        logger.setLevel(logging.CRITICAL)
+
+        with pytest.raises(Exception, match="The exception"):
+            with DoneManager.Create(_CreateSink(), "Testing") as dm:
+                with dm.YieldLogger(self._logger_name):
+                    raise Exception("The exception")
+
+        assert logger.handlers == [original_handler]
+        assert logger.propagate is True
+        assert logger.level == logging.CRITICAL
+
+    # ----------------------------------------------------------------------
+    def test_NoPropagationToRoot(self):
+        root_sink = StringIO()
+
+        root_logger = logging.getLogger()
+        root_handler = logging.StreamHandler(root_sink)
+
+        root_logger.addHandler(root_handler)
+
+        with ExitStack(lambda: root_logger.removeHandler(root_handler)):
+            sink = _CreateSink()
+
+            with DoneManager.Create(sink, "Testing") as dm:
+                with dm.YieldLogger(self._logger_name):
+                    logging.getLogger(self._logger_name).warning("The warning")
+
+            assert root_sink.getvalue() == ""
+            assert "WARNING: The warning" in sink.getvalue()
+
+    # ----------------------------------------------------------------------
+    def test_HandlerErrorDoesNotPropagate(self):
+        # A failure while writing is routed to `handleError` rather than raised to the caller.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logger = logging.getLogger(self._logger_name)
+
+                # A format string that doesn't match the provided args will raise within `format`
+                logger.warning("%d", "not_an_int")
+
+    # ----------------------------------------------------------------------
+    def test_ConcurrentWrites(self):
+        sink = _CreateSink()
+
+        num_threads = 5
+        num_messages = 20
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logger = logging.getLogger(self._logger_name)
+
+                # ----------------------------------------------------------------------
+                def Impl(
+                    thread_index: int,
+                ) -> None:
+                    for message_index in range(num_messages):
+                        logger.info("Thread {} message {}".format(thread_index, message_index))
+
+                # ----------------------------------------------------------------------
+
+                threads = [
+                    threading.Thread(target=Impl, args=(thread_index,)) for thread_index in range(num_threads)
+                ]
+
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join()
+
+        content = sink.getvalue()
+
+        # Every message should be written exactly once and without interleaved content
+        for thread_index in range(num_threads):
+            for message_index in range(num_messages):
+                assert (
+                    content.count("  INFO: Thread {} message {}\n".format(thread_index, message_index)) == 1
+                )
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize("ignore_logging_results", [False, True])
+    def test_IgnoreLoggingResultsWithoutLogging(self, ignore_logging_results):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name, ignore_logging_results=ignore_logging_results):
+                pass
+
+            assert dm.result == 0
+
+        assert _Scrub(sink.getvalue()) == "Testing...DONE! (0, <Scrubbed Time>)\n"
+
+    # ----------------------------------------------------------------------
+    def test_IgnoreLoggingResultsDefaultsToFalse(self):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name):
+                logging.getLogger(self._logger_name).error("The error")
+
+            assert dm.result == -1
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              ERROR: The error
+            DONE! (-1, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize(
+        ("log_func_name", "expected_result", "expected_prefix"),
+        [
+            ("error", -1, "ERROR"),
+            ("warning", 1, "WARNING"),
+        ],
+    )
+    def test_IgnoreLoggingResultsFalse(self, log_func_name, expected_result, expected_prefix):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name, ignore_logging_results=False):
+                getattr(logging.getLogger(self._logger_name), log_func_name)("The content")
+
+            assert dm.result == expected_result
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              {}: The content
+            DONE! ({}, <Scrubbed Time>)
+            """,
+        ).format(expected_prefix, expected_result)
+
+    # ----------------------------------------------------------------------
+    @pytest.mark.parametrize(
+        ("log_func_name", "expected_prefix"),
+        [
+            ("error", "ERROR"),
+            ("warning", "WARNING"),
+        ],
+    )
+    def test_IgnoreLoggingResultsTrue(self, log_func_name, expected_prefix):
+        # The content is still written, but the result is reset when the context exits.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.YieldLogger(self._logger_name, ignore_logging_results=True):
+                getattr(logging.getLogger(self._logger_name), log_func_name)("The content")
+
+            assert dm.result == 0
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              {}: The content
+            DONE! (0, <Scrubbed Time>)
+            """,
+        ).format(expected_prefix)
+
+    # ----------------------------------------------------------------------
+    def test_IgnoreLoggingResultsTruePreservesPreexistingResult(self):
+        # The result observed when the context was entered is restored, so a result set before
+        # the context survives.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            dm.WriteError("Before the context")
+            assert dm.result == -1
+
+            with dm.YieldLogger(self._logger_name, ignore_logging_results=True):
+                pass
+
+            assert dm.result == -1
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              ERROR: Before the context
+            DONE! (-1, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_IgnoreLoggingResultsTruePreservesPreexistingResultWhenLogging(self):
+        # The pre-existing result is restored even though the logged error would otherwise have
+        # changed it.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            dm.WriteWarning("Before the context")
+            assert dm.result == 1
+
+            with dm.YieldLogger(self._logger_name, ignore_logging_results=True):
+                logging.getLogger(self._logger_name).error("The error")
+                assert dm.result == -1
+
+            assert dm.result == 1
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              WARNING: Before the context
+              ERROR: The error
+            DONE! (1, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_IgnoreLoggingResultsTrueOnException(self):
+        # The restore happens within `finally`, so the logged error is discarded when the context
+        # exits via an exception. The DoneManager itself still ends with an error result because
+        # the exception is what failed, not the log records.
+        observed_results: list[int] = []
+
+        with pytest.raises(Exception, match="The exception"):
+            with DoneManager.Create(_CreateSink(), "Testing") as dm:
+                try:
+                    with dm.YieldLogger(self._logger_name, ignore_logging_results=True):
+                        logging.getLogger(self._logger_name).error("The error")
+                        observed_results.append(dm.result)
+
+                        raise Exception("The exception")
+                finally:
+                    observed_results.append(dm.result)
+
+        assert observed_results == [-1, 0]
+        assert dm.result == -1
+
+    # ----------------------------------------------------------------------
+    def test_IgnoreLoggingResultsTrueIsNotSeenByParent(self):
+        # A nested DoneManager propagates its result to its parent when it exits, which is after
+        # the reset; the parent therefore never observes the logged error.
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.Nested("Nested...") as nested_dm:
+                with nested_dm.YieldLogger(self._logger_name, ignore_logging_results=True):
+                    logging.getLogger(self._logger_name).error("The error")
+
+                assert nested_dm.result == 0
+
+            assert dm.result == 0
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              Nested...
+                ERROR: The error
+              DONE! (0, <Scrubbed Time>)
+            DONE! (0, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    def test_IgnoreLoggingResultsFalseIsSeenByParent(self):
+        sink = _CreateSink()
+
+        with DoneManager.Create(sink, "Testing") as dm:
+            with dm.Nested("Nested...") as nested_dm:
+                with nested_dm.YieldLogger(self._logger_name, ignore_logging_results=False):
+                    logging.getLogger(self._logger_name).error("The error")
+
+                assert nested_dm.result == -1
+
+            assert dm.result == -1
+
+        assert _Scrub(sink.getvalue()) == textwrap.dedent(
+            """\
+            Testing...
+              Nested...
+                ERROR: The error
+              DONE! (-1, <Scrubbed Time>)
+            DONE! (-1, <Scrubbed Time>)
+            """,
+        )
+
+    # ----------------------------------------------------------------------
+    # |  Private Data
+    # ----------------------------------------------------------------------
+    @property
+    def _logger_name(self) -> str:
+        # Each test gets a unique logger name so that logger state does not leak between tests
+        # (`logging.getLogger` returns a process-wide singleton).
+        return "dbrownell_Common_test_{}".format(id(self))
+
+    # ----------------------------------------------------------------------
+    @staticmethod
+    @contextmanager
+    def _RootLoggerLevel(
+        level: int,
+    ) -> Iterator[None]:
+        """Temporarily sets the root logger's level.
+
+        `YieldLogger` sets the logger to DEBUG and disables propagation, so the root logger takes
+        no part in filtering. This is used to demonstrate that a restrictive ancestor level has no
+        effect on which records reach the handler.
+        """
+
+        root_logger = logging.getLogger()
+        prev_level = root_logger.level
+
+        root_logger.setLevel(level)
+
+        try:
+            yield
+        finally:
+            root_logger.setLevel(prev_level)
 
 
 # ----------------------------------------------------------------------

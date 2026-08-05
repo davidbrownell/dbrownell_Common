@@ -15,6 +15,7 @@
 
 import datetime
 import itertools
+import logging
 import os
 import sys
 import time
@@ -715,6 +716,40 @@ class DoneManager:
                         sys.stdout.flush()
 
     # ----------------------------------------------------------------------
+    @contextmanager
+    def YieldLogger(
+        self,
+        *logger_names: str,
+        ignore_logging_results: bool = False,
+    ) -> Iterator[None]:
+        """Redirect loggers to the current `DoneManager` instance."""
+
+        prev_result = self.result
+
+        handler = _LogHandler(self)
+
+        prev_states = [
+            (logger, logger.handlers, logger.propagate, logger.level)
+            for logger in (logging.getLogger(name) for name in logger_names)
+        ]
+
+        for logger, *_ in prev_states:
+            logger.handlers = [handler]
+            logger.propagate = False
+            logger.setLevel(logging.DEBUG)
+
+        try:
+            yield
+        finally:
+            for logger, handlers, propagate, level in prev_states:
+                logger.handlers = handlers
+                logger.propagate = propagate
+                logger.setLevel(level)
+
+            if ignore_logging_results:
+                self.result = prev_result
+
+    # ----------------------------------------------------------------------
     def __post_init__(self):
         self._line_prefix = self._stream.GetCompleteLinePrefix(include_self=False)
         self._status_line_prefix = self._line_prefix + self._stream.GetLinePrefix(len(self._line_prefix))
@@ -1014,3 +1049,37 @@ class DoneManager:
                 # Move up a line and recreate the heading
                 self._stream.write("\033[1A\r{}{}".format(self._line_prefix, self.heading))
                 self._stream.flush()
+
+
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+class _LogHandler(logging.Handler):
+    """Routes log records to a DoneManager instance."""
+
+    # ----------------------------------------------------------------------
+    def __init__(
+        self,
+        dm: DoneManager,
+    ) -> None:
+        super().__init__(level=logging.DEBUG)
+
+        self._dm = dm
+
+    # ----------------------------------------------------------------------
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            content = self.format(record)
+
+            if record.levelno >= logging.ERROR:
+                write_func = self._dm.WriteError
+            elif record.levelno >= logging.WARNING:
+                write_func = self._dm.WriteWarning
+            elif record.levelno >= logging.INFO:
+                write_func = self._dm.WriteInfo
+            else:
+                write_func = self._dm.WriteDebug
+
+            write_func(content)
+        except Exception:
+            self.handleError(record)
