@@ -955,17 +955,21 @@ class DoneManager:
         if "preserve_status" not in kwargs:
             kwargs["preserve_status"] = False
 
-        with self.__class__._CreateImpl(  # pylint: disable=protected-access
-            stream,
-            Args(*args, **kwargs),
-            flags=self.flags,
-            num_cols=self.num_cols,
-        ) as dm:
-            try:
+        dm = None
+
+        try:
+            with self.__class__._CreateImpl(  # pylint: disable=protected-access
+                stream,
+                Args(*args, **kwargs),
+                flags=self.flags,
+                num_cols=self.num_cols,
+            ) as dm:
                 yield dm
-            finally:
-                if (dm.result < 0 and self.result >= 0) or (dm.result > 0 and self.result == 0):
-                    self.result = dm.result
+        finally:
+            if dm is not None and (
+                (dm.result < 0 and self.result >= 0) or (dm.result > 0 and self.result == 0)
+            ):
+                self.result = dm.result
 
     # ----------------------------------------------------------------------
     def _WriteImpl(
