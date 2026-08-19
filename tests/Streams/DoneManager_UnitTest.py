@@ -1322,6 +1322,31 @@ def test_NestedErrors():
 
 
 # ----------------------------------------------------------------------
+def test_NestedSuppressedExceptionResultIsSeenByParent():
+    # The nested DoneManager's result is set to -1 while its own context manager is exiting (as it
+    # processes the suppressed exception), so the propagation to the parent must happen after that
+    # exit rather than within it.
+    sink = _CreateSink()
+
+    with DoneManager.Create(sink, "Testing") as dm:
+        with dm.Nested("Nested", suppress_exceptions=True) as nested_dm:
+            raise Exception("The exception")
+
+        assert nested_dm.result == -1
+        assert dm.result == -1
+
+    assert _Scrub(sink.getvalue()) == textwrap.dedent(
+        """\
+        Testing...
+          Nested...
+            ERROR: The exception
+          DONE! (-1, <Scrubbed Time>)
+        DONE! (-1, <Scrubbed Time>)
+        """,
+    )
+
+
+# ----------------------------------------------------------------------
 def test_VerboseNested():
     # verbose == False
     sink = _CreateSink()
