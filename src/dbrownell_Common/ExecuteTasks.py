@@ -16,7 +16,6 @@ from dataclasses import dataclass, field
 from enum import auto, Enum
 from pathlib import Path
 from typing import cast, Generic, Optional, Protocol, TypeVar, Union
-from unittest.mock import MagicMock
 
 from dbrownell_Common.ContextlibEx import ExitStack
 from dbrownell_Common.InflectEx import inflect
@@ -1025,9 +1024,16 @@ def _GenerateProgressBarExperienceData(
         # rather than referencing `sys.stdout` directly, but it is really hard to work with mocked
         # stream as mocks will create mocks for everything called on the mock. Use sys.stdout
         # directly to avoid that particular problem.
-        assert stdout_context.stream is sys.stdout or isinstance(stdout_context.stream, MagicMock), (
-            stdout_context.stream
-        )
+        if stdout_context.stream is not sys.stdout:
+            try:
+                from unittest.mock import MagicMock
+
+                assert isinstance(stdout_context.stream, MagicMock), (
+                    "`stdout_context.stream` must be based on `sys.stdout` or `MagicMock`."
+                )
+            except ImportError:
+                # unittest may not be available when running as part of a frozen executable.
+                assert False, "`stdout_context.stream` must be based on `sys.stdout`."
 
         progress_bar = Progress(
             *Progress.get_default_columns(),
