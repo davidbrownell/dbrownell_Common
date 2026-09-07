@@ -1170,7 +1170,7 @@ def _ExecuteTask(  # noqa: PLR0915
     with ExitStack(lambda: on_task_data_complete_func(task_data)):
         start_time = time.perf_counter()
 
-        with status_factory.GenerateInternalStatus(desc) as internal_status:
+        with status_factory.GenerateInternalStatus(task_data.display) as internal_status:
             try:
                 task_data.log_filename, prepare_func = init_func(task_data.context)
 
