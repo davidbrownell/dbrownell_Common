@@ -50,14 +50,17 @@
 import re
 import textwrap
 
+from contextlib import contextmanager
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable, cast, Optional
+from typing import Any, Callable, cast, Iterator, Optional
 
 import pytest
 
 from dbrownell_Common.ExecuteTasks import *
+from dbrownell_Common import ExecuteTasks as ExecuteTasksImpl
 from dbrownell_Common import PathEx
+from dbrownell_Common.Streams import StreamDecorator
 from dbrownell_Common.Streams.DoneManager import DoneManager
 from dbrownell_Common.Streams.TextWriter import TextWriter
 
@@ -174,9 +177,159 @@ def test_YieldQueueExecutor() -> None:
 
 
 # ----------------------------------------------------------------------
+def test_StatusDisplayIsTaskDisplay() -> None:
+    # The status associated with a task should be created with the task's display value rather than
+    # the description associated with the collection of tasks.
+    status_factory = _RecordingInternalStatusFactory()
+
+    task_data = TaskData("The Task", None)
+
+    ExecuteTasksImpl._ExecuteTask(
+        "The Tasks",
+        task_data,
+        _CreateInitFunc(lambda status: 0),
+        status_factory,
+        lambda _: None,
+        is_debug=False,
+    )
+
+    assert status_factory.displays == ["The Task"]
+    assert task_data.result == 0
+
+
+# ----------------------------------------------------------------------
+def test_StatusDisplayIsTaskDisplayWhenCatastrophicError() -> None:
+    # The description associated with the collection of tasks is still used when describing
+    # catastrophic errors.
+    status_factory = _RecordingInternalStatusFactory()
+
+    # ----------------------------------------------------------------------
+    def Execute(status: Status) -> int:
+        raise Exception("Catastrophic error")
+
+    # ----------------------------------------------------------------------
+
+    task_data = TaskData("The Task", None)
+
+    ExecuteTasksImpl._ExecuteTask(
+        "The Tasks",
+        task_data,
+        _CreateInitFunc(Execute),
+        status_factory,
+        lambda _: None,
+        is_debug=False,
+    )
+
+    assert status_factory.displays == ["The Task"]
+    assert task_data.result == CATASTROPHIC_TASK_FAILURE_RESULT
+    assert task_data.short_desc == "The Tasks failed"
+
+
+# ----------------------------------------------------------------------
+def test_SetTitleOverridesTaskDisplay() -> None:
+    # `Status.SetTitle` should override the display associated with the task.
+    progress_bar = _RecordingProgressBar()
+
+    status_factory = ExecuteTasksImpl._ProgressBarExperienceInternalStatusFactory(
+        StreamDecorator.StreamDecorator.YieldStdoutContext(StringIO(), "", persist_content=True),
+        cast(Any, progress_bar),
+        cast(Any, 0),
+        quiet=False,
+        is_output_verbose=False,
+    )
+
+    # ----------------------------------------------------------------------
+    def Execute(status: Status) -> int:
+        status.SetTitle("The Title")
+        return 0
+
+    # ----------------------------------------------------------------------
+
+    task_data = TaskData("The Task", None)
+
+    ExecuteTasksImpl._ExecuteTask(
+        "The Tasks",
+        task_data,
+        _CreateInitFunc(Execute),
+        status_factory,
+        lambda _: None,
+        is_debug=False,
+    )
+
+    assert task_data.result == 0
+
+    # The task's display is used when the status is created and is then overridden by `SetTitle`.
+    assert progress_bar.descriptions == ["The Task", "The Title"]
+
+
+# ----------------------------------------------------------------------
 # |
 # |  Private Types
 # |
+# ----------------------------------------------------------------------
+class _RecordingProgressBar:
+    """Captures the descriptions written to a progress bar."""
+
+    # ----------------------------------------------------------------------
+    def __init__(self) -> None:
+        self.descriptions: list[str] = []
+
+    # ----------------------------------------------------------------------
+    def update(self, task_id, **kwargs) -> None:
+        description = kwargs.get("description", None)
+        if description is not None:
+            self.descriptions.append(description.strip())
+
+    # ----------------------------------------------------------------------
+    def start_task(self, task_id) -> None:
+        pass
+
+    # ----------------------------------------------------------------------
+    def stop_task(self, task_id) -> None:
+        pass
+
+
+# ----------------------------------------------------------------------
+class _RecordingInternalStatus(ExecuteTasksImpl._InternalStatus):
+    # ----------------------------------------------------------------------
+    def SetNumSteps(self, *args, **kwargs) -> None:
+        pass
+
+    # ----------------------------------------------------------------------
+    def SetTitle(self, *args, **kwargs) -> None:
+        pass
+
+    # ----------------------------------------------------------------------
+    def OnProgress(self, *args, **kwargs) -> bool:
+        return True
+
+    # ----------------------------------------------------------------------
+    def OnInfo(self, *args, **kwargs) -> None:
+        pass
+
+
+# ----------------------------------------------------------------------
+class _RecordingInternalStatusFactory(ExecuteTasksImpl._InternalStatusFactory):
+    """Captures the display values used when creating status objects."""
+
+    # ----------------------------------------------------------------------
+    def __init__(self) -> None:
+        self.displays: list[str] = []
+
+    # ----------------------------------------------------------------------
+    @contextmanager
+    def GenerateInternalStatus(
+        self,
+        display: str,
+    ) -> Iterator[_RecordingInternalStatus]:
+        self.displays.append(display)
+        yield _RecordingInternalStatus()
+
+    # ----------------------------------------------------------------------
+    def Stop(self) -> None:
+        pass
+
+
 # ----------------------------------------------------------------------
 class _FakeStream(TextWriter):
     # ----------------------------------------------------------------------
@@ -294,6 +447,25 @@ def _TransformTasks(
     )
 
     return cast(list[int], results)
+
+
+# ----------------------------------------------------------------------
+def _CreateInitFunc(
+    execute_func: ExecuteTasksTypes.ExecuteFuncType,
+) -> ExecuteTasksTypes.InitFuncType:
+    # ----------------------------------------------------------------------
+    def Init(context: Any) -> tuple[Path, ExecuteTasksTypes.PrepareFuncType]:
+        # ----------------------------------------------------------------------
+        def Prepare(on_simple_status_func: Callable[[str], None]) -> ExecuteTasksTypes.ExecuteFuncType:
+            return execute_func
+
+        # ----------------------------------------------------------------------
+
+        return PathEx.CreateTempFileName(), Prepare
+
+    # ----------------------------------------------------------------------
+
+    return Init
 
 
 # ----------------------------------------------------------------------
