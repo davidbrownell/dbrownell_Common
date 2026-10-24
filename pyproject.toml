@@ -9,16 +9,15 @@ version = "0.0.0"
 
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "David Brownell", email = "github@DavidBrownell.com" }
-]
-requires-python = ">= 3.10"
+authors = [{ name = "Dave Brownell", email = "github@DavidBrownell.com" }]
+requires-python = ">= 3.11"
 dependencies = [
     "inflect>=7.5.0",
     "rich>=14.0.0",
     "typer>=0.15.3",
     "typer-config>=1.4.2",
 ]
+
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -46,7 +45,7 @@ Documentation = "https://github.com/davidbrownell/dbrownell_Common"
 Repository = "https://github.com/davidbrownell/dbrownell_Common"
 
 [build-system]
-requires = ["uv_build>=0.11.21,<0.12.0"]
+requires = ["uv_build>=0.13.5,<0.14.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
@@ -64,10 +63,8 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--verbose -vv --capture=no --cov=dbrownell_Common --cov-report term --cov-report xml:coverage.xml --cov-fail-under=82.0"
-python_files = [
-    "**/*Test.py",
-]
+addopts = "-vvv --capture=no --cov=dbrownell_Common --cov-report html --cov-report term --cov-report xml:coverage.xml --cov-fail-under=82.0"
+python_files = ["**/*Test.py"]
 
 [tool.ruff]
 line-length = 110
@@ -80,25 +77,25 @@ ignore = [
     "ANN003", # Missing type annotation for `**kwargs`
     "BLE001", # Do not catch blind exception: `Exception`
     "COM812", # Trailing comma missing
-    "D105", # Missing docstring in magic method
-    "D107", # Missing docstring in `__init__` method
-    "D202", # No blank lines allowed after function docstring
-    "D203", # Incorrect blank line before class docstring
-    "D213", # Multi line summary second line
-    "E501", # Line too long
-    "E731", # Rewrite lambda as def
+    "D105",   # Missing docstring in magic method
+    "D107",   # Missing docstring in `__init__` method
+    "D202",   # No blank lines allowed after function docstring
+    "D203",   # Incorrect blank line before class docstring
+    "D213",   # Multi line summary second line
+    "E501",   # Line too long
+    "E731",   # Rewrite lambda as def
     "FIX002", # Line contains TODO, consider resolving the issue
-    "I001", # Import block is un-sorted or un-formatted
-    "N802", # Function name `xxx` should be lowercase
-    "N999", # Invalid module name
+    "I001",   # Import block is un-sorted or un-formatted
+    "N802",   # Function name `xxx` should be lowercase
+    "N999",   # Invalid module name
     "RSE102", # Unnecessary parentheses on raise exception
-    "S101", # Use of assert detected
-    "TC006", # Add quotes to type expression in `typing.cast()`
-    "TD002", # Missing author in TODO
-    "TD003", # Missing issue link for this TODO
+    "S101",   # Use of assert detected
+    "TC006",  # Add quotes to type expression in `typing.cast()`
+    "TD002",  # Missing author in TODO
+    "TD003",  # Missing issue link for this TODO
     "TRY002", # Create your own exception
     "TRY300", # Consider moving this statement to an `else` block
-    "UP032", # Use f-string instead of `format` call
+    "UP032",  # Use f-string instead of `format` call
 ]
 
 [tool.ruff.lint.mccabe]
